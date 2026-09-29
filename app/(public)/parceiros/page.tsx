@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { listarVitrine } from "@/lib/data";
 import BuscaParceiros from "@/components/vitrine/BuscaParceiros";
 
-export const revalidate = 300;
 export const metadata: Metadata = { title: "Parceiros", description: "Vitrine de parceiros PetHub360: filtre por categoria, cidade e benefícios disponíveis." };
 
 export default async function ParceirosPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const [vitrine, sp] = await Promise.all([listarVitrine(), searchParams]);
+  const sp = await searchParams;
   return (
     <>
       <section className="pagina-cab">
@@ -19,7 +17,7 @@ export default async function ParceirosPage({ searchParams }: { searchParams: Pr
       </section>
       <section className="secao" style={{ paddingTop: 28 }}>
         <div className="wrap">
-          <Suspense><BuscaParceiros vitrine={vitrine} inicial={{ q: sp.q, categoria: sp.categoria, cidade: sp.cidade }} /></Suspense>
+          <Suspense><BuscaParceiros inicial={{ q: sp.q, categoria: sp.categoria, cidade: sp.cidade }} /></Suspense>
         </div>
       </section>
     </>

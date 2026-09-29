@@ -3,20 +3,21 @@
 import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { LocateFixed, Search, X } from "lucide-react";
-import type { Vitrine } from "@/types/conteudo";
 import { distanciaKm } from "@/lib/util";
 import { CardParceiro } from "./Cards";
+import { useVitrine } from "@/components/public/AoVivo";
 
 type Posicao = { latitude: number; longitude: number };
 
 const normalizar = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 // Busca de parceiros/serviços (páginas /servicos e /parceiros). Tudo no
-// navegador sobre a vitrine que o servidor já mandou (sem nova leitura):
+// navegador sobre a vitrine ao vivo (AoVivoProvider — atualiza sozinha):
 // texto (nome do parceiro ou do serviço), categoria, cidade, "com
 // benefício" e "perto de mim" (geolocalização → ordena pela unidade mais
 // próxima). Filtros vão pra URL (?q=&categoria=&cidade=) pra poder compartilhar.
-export default function BuscaParceiros({ vitrine, inicial }: { vitrine: Vitrine; inicial: { q?: string; categoria?: string; cidade?: string } }) {
+export default function BuscaParceiros({ inicial }: { inicial: { q?: string; categoria?: string; cidade?: string } }) {
+  const vitrine = useVitrine(); // ao vivo (AoVivoProvider)
   const router = useRouter();
   const pathname = usePathname();
   const [q, setQ] = useState(inicial.q ?? "");

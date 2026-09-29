@@ -2,11 +2,12 @@
 // dados/{tenant}/<colecao>. Só coleções de vitrine/conteúdo: NUNCA ler
 // clientes, pets, reservas ou qualquer dado pessoal aqui.
 //
-// Duas famílias de função (mesmo padrão herdado do portal181):
-// - `listarX` / `buscarX` — leitura pontual (getDocs), usada pelos Server
-//   Components (SSR/ISR, HTML com dado real pra SEO);
-// - `subscribeX` — listener (onSnapshot) pros componentes client que
-//   precisam refletir edição do painel sem recarregar (páginas, avisos).
+// Tempo real, no mesmo padrão do portal181:
+// - `listarX` / `buscarX` — leitura pontual (getDocs) no servidor Node, a
+//   cada acesso (force-dynamic): o HTML já sai com o dado atual (SEO);
+// - `subscribeX` — listener (onSnapshot) no navegador: depois de carregar,
+//   tudo (configuração, vitrine, páginas, avisos, avaliações) acompanha o
+//   Firestore — editou no painel, muda na tela aberta sem recarregar.
 //
 // Regras de publicação (espelham o painel — schemas em
 // petGo360/shared/shemas/petgo360):
@@ -17,28 +18,21 @@
 // - avaliacoes: status "publicada";
 // - paginas: "publicada"; avisos: "ativo" e dentro de inicio_em/fim_em.
 //
-// Sem tenant configurado (ou se a leitura falhar) cada função cai num
-// conteúdo ilustrativo, pra o site navegar antes de qualquer credencial.
+// Só dado real, sem conteúdo de exemplo. Falha de leitura no servidor LANÇA
+// erro de propósito: no build ele aparece na hora; em produção (ISR) o Next
+// continua servindo a última versão boa da página em vez de gravar em cache
+// uma página vazia. Tenant é obrigatório (NEXT_PUBLIC_PETHUB_PATH).
 import { getAll, getAllOnce } from "@/lib/firebase/gen";
 import type { Unsubscribe } from "firebase/firestore";
 import type { Aviso, Avaliacao, Beneficio, Categoria, Configuracao, Pagina, Parceiro, ServicoParceiro, Unidade, Vitrine } from "@/types/conteudo";
-import {
-  CONFIGURACAO_PADRAO, PAGINAS_MOCK, AVISOS_MOCK, CATEGORIAS_MOCK, PARCEIROS_MOCK, BENEFICIOS_MOCK, AVALIACOES_MOCK,
-} from "@/lib/mock";
 
-async function tentar<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
-  try {
-    return await fn();
-  } catch {
-    return fallback;
-  }
-}
-
-function subscrever<T>(colecao: string, mapear: (docs: any[]) => T, fallback: T, callback: (dados: T) => void): Unsubscribe {
+// Listener no cliente: se falhar (sem rede, regra), mantém o que já está na
+// tela — que veio do servidor — em vez de esvaziar.
+function subscrever<T>(colecao: string, mapear: (docs: any[]) => T, callback: (dados: T) => void): Unsubscribe {
   try {
     return getAll(colecao, (docs) => callback(mapear(docs)));
-  } catch {
-    callback(fallback);
+  } catch (e) {
+    console.error(`[pethub] listener de ${colecao} indisponível`, e);
     return () => {};
   }
 }
@@ -61,6 +55,18 @@ const noSite = (d: any) => Array.isArray(d.canais) && d.canais.includes("site");
 const porOrdem = <T extends { ordem: number }>(a: T, b: T) => a.ordem - b.ordem;
 
 // ── Configuração do site (registro único) ───────────────────────────────
+// Sem registro ativo em Portal Pet → Configuração do site: só a marca e as
+// cores; o resto fica em branco (seções que dependem disso não aparecem).
+// Nada de telefone, número ou texto inventado.
+export const CONFIGURACAO_BASE: Configuracao = {
+  nomeSite: "PetHub360", slogan: "", logoUrl: null, corPrimaria: "#14523d", corDestaque: "#f36b21",
+  heroChamada: "", heroTitulo: "PetHub360", heroTituloDestaque: "", heroTexto: "", heroImagemUrl: null,
+  ctaPrincipalTexto: "Conheça o PetGo360", ctaPrincipalLink: "/petgo360", ctaSecundarioTexto: "Quero ser parceiro", ctaSecundarioLink: "/quero-ser-parceiro",
+  numeros: [], appStoreUrl: "", googlePlayUrl: "", whatsapp: "", email: "", telefone: "", endereco: "", redes: [],
+  textoRodape: "", seoTitulo: "", seoDescricao: "",
+  menu: { solucoes: true, servicos: true, clube: true, parceiros: true, petgo360: true, paraParceiros: true },
+  quantidadeDestaques: 8,
+};
 // O WhatsApp do site é o "Telefone / WhatsApp" da configuração: só dígitos,
 // e sem DDI (10–11 dígitos) assume Brasil (55).
 const numeroWhatsapp = (telefone: string) => {
@@ -69,8 +75,8 @@ const numeroWhatsapp = (telefone: string) => {
 };
 function mapearConfiguracao(docs: any[]): Configuracao {
   const d = docs.find((x) => x.status === "ativo") ?? null;
-  if (!d) return CONFIGURACAO_PADRAO;
-  const p = CONFIGURACAO_PADRAO;
+  if (!d) return CONFIGURACAO_BASE;
+  const p = CONFIGURACAO_BASE;
   const numeros = ([
     ["numero_parceiros", "Parceiros", "na rede PetHub360"],
     ["numero_tutores", "Tutores", "usando o PetGo360"],
@@ -116,7 +122,8 @@ function mapearConfiguracao(docs: any[]): Configuracao {
   };
 }
 
-export const listarConfiguracao = () => tentar(async () => mapearConfiguracao(await getAllOnce("configuracoes_site")), CONFIGURACAO_PADRAO);
+export const listarConfiguracao = async () => mapearConfiguracao(await getAllOnce("configuracoes_site"));
+export const subscribeConfiguracao = (cb: (c: Configuracao) => void) => subscrever("configuracoes_site", mapearConfiguracao, cb);
 
 // ── Páginas ──────────────────────────────────────────────────────────────
 function mapearPaginas(docs: any[]): Pagina[] {
@@ -130,10 +137,11 @@ function mapearPaginas(docs: any[]): Pagina[] {
     .sort(porOrdem);
 }
 
-export const listarPaginasPublicadas = () => tentar(async () => mapearPaginas(await getAllOnce("paginas")), PAGINAS_MOCK);
+export const listarPaginasPublicadas = async () => mapearPaginas(await getAllOnce("paginas"));
+export const subscribePaginasPublicadas = (cb: (p: Pagina[]) => void) => subscrever("paginas", mapearPaginas, cb);
 export const buscarPaginaPorSlug = async (slug: string) => (await listarPaginasPublicadas()).find((p) => p.slug === slug) ?? null;
 export const subscribePaginaPorSlug = (slug: string, cb: (p: Pagina | null) => void) =>
-  subscrever("paginas", (docs) => mapearPaginas(docs).find((p) => p.slug === slug) ?? null, PAGINAS_MOCK.find((p) => p.slug === slug) ?? null, cb);
+  subscrever("paginas", (docs) => mapearPaginas(docs).find((p) => p.slug === slug) ?? null, cb);
 
 // ── Avisos ───────────────────────────────────────────────────────────────
 function mapearAvisos(docs: any[]): Aviso[] {
@@ -148,8 +156,8 @@ function mapearAvisos(docs: any[]): Aviso[] {
     .sort(porOrdem);
 }
 
-export const listarAvisosAtivos = () => tentar(async () => mapearAvisos(await getAllOnce("avisos")), AVISOS_MOCK);
-export const subscribeAvisosAtivos = (cb: (a: Aviso[]) => void) => subscrever("avisos", mapearAvisos, AVISOS_MOCK, cb);
+export const listarAvisosAtivos = async () => mapearAvisos(await getAllOnce("avisos"));
+export const subscribeAvisosAtivos = (cb: (a: Aviso[]) => void) => subscrever("avisos", mapearAvisos, cb);
 
 // ── Vitrine: categorias, parceiros, benefícios ───────────────────────────
 function mapearCategorias(docs: any[]): Categoria[] {
@@ -246,26 +254,40 @@ export function montarVitrine(emp: any[], uni: any[], sp: any[], cat: any[], van
   return { categorias, parceiros, beneficios };
 }
 
-const VITRINE_MOCK: Vitrine = { categorias: CATEGORIAS_MOCK, parceiros: PARCEIROS_MOCK, beneficios: BENEFICIOS_MOCK };
+const COLECOES_VITRINE = ["empresas", "unidades", "servicos_parceiros", "categorias_servicos", "vantagens", "campanhas_cupons_off"] as const;
 
-export const listarVitrine = () =>
-  tentar(async () => {
-    const [emp, uni, sp, cat, vant, camp] = await Promise.all(
-      ["empresas", "unidades", "servicos_parceiros", "categorias_servicos", "vantagens", "campanhas_cupons_off"].map((c) => getAllOnce(c)),
-    );
-    return montarVitrine(emp, uni, sp, cat, vant, camp);
-  }, VITRINE_MOCK);
+export async function listarVitrine(): Promise<Vitrine> {
+  const [emp, uni, sp, cat, vant, camp] = await Promise.all(COLECOES_VITRINE.map((c) => getAllOnce(c)));
+  return montarVitrine(emp, uni, sp, cat, vant, camp);
+}
+
+// Vitrine em tempo real: um listener por coleção; a cada mudança em qualquer
+// uma, remonta a vitrine inteira com as mesmas regras de publicação. Só
+// emite depois que as 6 chegaram pelo menos uma vez (até lá, a tela fica com
+// o que veio do servidor).
+export function subscribeVitrine(cb: (v: Vitrine) => void): Unsubscribe {
+  const atual: Partial<Record<(typeof COLECOES_VITRINE)[number], any[]>> = {};
+  const emitir = () => {
+    if (COLECOES_VITRINE.some((c) => !atual[c])) return;
+    cb(montarVitrine(atual.empresas!, atual.unidades!, atual.servicos_parceiros!, atual.categorias_servicos!, atual.vantagens!, atual.campanhas_cupons_off!));
+  };
+  const unsubs = COLECOES_VITRINE.map((c) => subscrever(c, (docs) => docs, (docs) => { atual[c] = docs; emitir(); }));
+  return () => unsubs.forEach((u) => u());
+}
+
+function mapearAvaliacoes(docs: any[], idEmpresa: string): Avaliacao[] {
+  return docs
+    .filter((d) => String(d.id_empresas) === idEmpresa && d.status === "publicada")
+    .map((d) => ({ id: String(d.id), idEmpresa, nota: num(d.nota), comentario: txt(d.comentario), resposta: txt(d.resposta_parceiro), data: ms(d.created_at) }))
+    .sort((a, b) => (b.data ?? 0) - (a.data ?? 0));
+}
+export const subscribeAvaliacoes = (idEmpresa: string, cb: (a: Avaliacao[]) => void) =>
+  subscrever("avaliacoes", (docs) => mapearAvaliacoes(docs, idEmpresa), cb);
 
 export async function buscarParceiro(id: string): Promise<{ parceiro: Parceiro; beneficios: Beneficio[]; categorias: Categoria[]; avaliacoes: Avaliacao[] } | null> {
   const vitrine = await listarVitrine();
   const parceiro = vitrine.parceiros.find((p) => p.id === id);
   if (!parceiro) return null;
-  const avaliacoes = await tentar(async () => {
-    const docs = await getAllOnce("avaliacoes");
-    return docs
-      .filter((d) => String(d.id_empresas) === id && d.status === "publicada")
-      .map((d) => ({ id: String(d.id), idEmpresa: id, nota: num(d.nota), comentario: txt(d.comentario), resposta: txt(d.resposta_parceiro), data: ms(d.created_at) }))
-      .sort((a, b) => (b.data ?? 0) - (a.data ?? 0));
-  }, AVALIACOES_MOCK.filter((a) => a.idEmpresa === id));
+  const avaliacoes = mapearAvaliacoes(await getAllOnce("avaliacoes"), id);
   return { parceiro, beneficios: vitrine.beneficios.filter((b) => b.idEmpresa === id), categorias: vitrine.categorias, avaliacoes };
 }

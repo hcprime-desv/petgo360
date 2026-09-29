@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { buscarPaginaPorSlug, listarPaginasPublicadas } from "@/lib/data";
+import { buscarPaginaPorSlug } from "@/lib/data";
 import PaginaConteudo from "@/components/public/PaginaConteudo";
-
-export const revalidate = 300;
-
-// Pré-render dos slugs conhecidos; slug novo renderiza sob demanda (SSR).
-export async function generateStaticParams() {
-  return (await listarPaginasPublicadas()).map((p) => ({ slug: p.slug }));
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const pagina = await buscarPaginaPorSlug((await params).slug);

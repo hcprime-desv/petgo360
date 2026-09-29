@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X, Search, ChevronDown, Heart } from "lucide-react";
 import type { Configuracao, Pagina } from "@/types/conteudo";
+import { subscribePaginasPublicadas } from "@/lib/data";
+import { useConfiguracao } from "./AoVivo";
 
 // Menu fixo do documento do site (Início, Soluções, Serviços, Clube,
 // Parceiros, PetGo360, Para Parceiros) — cada item pode ser desligado em
@@ -49,9 +51,14 @@ export function Logo({ configuracao }: { configuracao: Configuracao }) {
   );
 }
 
-export default function Header({ configuracao, paginas }: { configuracao: Configuracao; paginas: Pagina[] }) {
+// `paginasIniciais` vem do servidor (SSR); depois o menu acompanha a coleção
+// `paginas` em tempo real — publicar/despublicar no painel reflete na hora.
+export default function Header({ paginasIniciais }: { paginasIniciais: Pagina[] }) {
+  const configuracao = useConfiguracao();
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
+  const [paginas, setPaginas] = useState<Pagina[]>(paginasIniciais);
+  useEffect(() => subscribePaginasPublicadas(setPaginas), []);
   useEffect(() => setAberto(false), [pathname]);
   const itens = montarMenu(configuracao, paginas);
   const ativo = (href: string) => (href === "/" ? pathname === "/" : !href.includes("#") && pathname.startsWith(href));

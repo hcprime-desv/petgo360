@@ -18,7 +18,7 @@ espelham o que o site usa. Não criar `/admin` aqui.
 
 Nasceu como cópia do portal181 (Disque Denúncia); tudo de
 denúncia/chat/baralho/procurados foi removido e o `.git` antigo foi apagado.
-Por enquanto roda só local (`npm run dev`), sem deploy.
+Por enquanto roda local (`npm run dev`, ou `npm run build && npx next start` para testar como produção), sem deploy.
 
 ## Decisões (e o porquê)
 
@@ -27,9 +27,17 @@ Por enquanto roda só local (`npm run dev`), sem deploy.
   `wa.me/<whatsapp_atendimento>` com parceiro e serviço no texto. Nunca o
   WhatsApp do próprio parceiro (WhatsApp é aquisição, app é fidelização).
   Resgate de cupom/vantagem também só no app (código único, status central).
-- **SSR/ISR** (`output: "standalone"`, `revalidate = 300`): HTML com dado
-  real (SEO). Páginas e avisos seguem em tempo real no cliente
-  (`subscribeX`/onSnapshot). `app/api/revalidate` invalida cache sob demanda.
+- **Tempo real em tudo (padrão portal181), sem cache.** Roda em Node
+  (`output: "standalone"`); `app/(public)/layout.tsx` é `force-dynamic`:
+  cada acesso renderiza no servidor com o dado atual (SEO). No navegador,
+  `components/public/AoVivo.tsx` (AoVivoProvider) mantém configuração e
+  vitrine (empresas, unidades, serviços, categorias, vantagens, campanhas)
+  com onSnapshot; Header/Footer ouvem `paginas`; AvisosClient ouve `avisos`;
+  a página do parceiro ouve `avaliacoes`. Editou no painel → muda na tela
+  aberta em ~0,3 s, sem recarregar. Conteúdo de cada página fica em
+  `components/paginas/*.tsx` (client, lê `useConfiguracao`/`useVitrine`);
+  o `page.tsx` só tem metadata e o 404 do servidor. Não voltar a usar
+  `revalidate`/ISR nem `generateStaticParams`.
 - **Mesmo Firebase do painel** (`omnichannel-b4696`), multi-tenant em
   `dados/{tenant}/<colecao>`; tenant em `NEXT_PUBLIC_PETHUB_PATH` (sem
   padrão — é o `path` do cliente PetGo360/Portal Pet no painel). Acesso
@@ -47,9 +55,12 @@ Por enquanto roda só local (`npm run dev`), sem deploy.
   "site", aceite LGPD obrigatório, id sequencial igual ao `onSaveIncrement`
   do painel — `criarComIdSequencial`). Validação em `lib/leads.ts` espelha
   o `LeadParceiroShema`.
-- **Fallback ilustrativo** (`lib/mock.ts`, cenário "PetGo360 Manaus", o
-  mesmo da Carga de Dados do painel): sem tenant ou se a leitura falhar,
-  o site navega com conteúdo de exemplo. Não remover esse padrão.
+- **Só dado real, sem mock** (removido para produção). Tenant obrigatório
+  (`NEXT_PUBLIC_PETHUB_PATH`, hoje `PETHUB360`): sem ele o build falha.
+  Falha de leitura no servidor LANÇA erro de propósito — em produção o ISR
+  segue servindo a última versão boa em vez de cachear página vazia;
+  `app/(public)/error.tsx` e `not-found.tsx` cobrem o resto. Sem registro
+  de configuração do site: só marca/cores (`CONFIGURACAO_BASE`), nada inventado.
 - **Markdown** (páginas/avisos) sempre por `components/public/Markdown.tsx`
   (rehype-raw + rehype-sanitize).
 - Depois de mexer em `page.tsx`/`layout.tsx` (Server Components) rodar
@@ -60,4 +71,9 @@ Por enquanto roda só local (`npm run dev`), sem deploy.
 - Portal do Parceiro (área autenticada no site) — `/entrar` hoje só orienta.
 - Audiência do site (acessos) para o Dashboard do Portal Pet.
 - Firestore rules: herdadas do portal181, revisar para as coleções do PetHub.
+- **Vitrine ao vivo expõe documentos inteiros ao navegador** (empresas com
+  comissão/CNPJ/razão social, campanhas com custo do cupom). Com as regras
+  abertas já eram legíveis, mas agora vão para todo visitante. Solução:
+  coleção pública de vitrine (só campos de exibição) gerada pelo backend, e
+  regras bloqueando leitura pública das coleções completas.
 - Repositório git próprio e deploy.

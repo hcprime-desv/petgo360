@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { listarVitrine } from "@/lib/data";
 import BuscaParceiros from "@/components/vitrine/BuscaParceiros";
 
-export const revalidate = 300;
 export const metadata: Metadata = { title: "Serviços", description: "Encontre clínicas, pet shops, banho e tosa, hotéis, transporte e outros serviços pet perto de você." };
 
 export default async function ServicosPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const [vitrine, sp] = await Promise.all([listarVitrine(), searchParams]);
+  const sp = await searchParams;
   return (
     <>
       <section className="pagina-cab">
@@ -19,7 +17,7 @@ export default async function ServicosPage({ searchParams }: { searchParams: Pro
       </section>
       <section className="secao" style={{ paddingTop: 28 }}>
         <div className="wrap">
-          <Suspense><BuscaParceiros vitrine={vitrine} inicial={{ q: sp.q, categoria: sp.categoria, cidade: sp.cidade }} /></Suspense>
+          <Suspense><BuscaParceiros inicial={{ q: sp.q, categoria: sp.categoria, cidade: sp.cidade }} /></Suspense>
         </div>
       </section>
     </>
