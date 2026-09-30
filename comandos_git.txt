@@ -1,7 +1,11 @@
 …or create a new repository on the command line
 echo "# petgo360" >> README.md
 git init
+<<<<<<< HEAD
 git add README.md
+=======
+git add .
+>>>>>>> 8c6abb8 (last commit)
 git commit -m "first commit"
 git branch -M main
 git remote add origin https://github.com/hcprime-desv/petgo360.git

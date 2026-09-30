@@ -49,7 +49,11 @@ Por enquanto roda local (`npm run dev`, ou `npm run build && npx next start` par
   unidade ativa não aparece. Destaques da Home = `destaque_site` na ordem
   de `ordem_destaque`.
 - **Só dado público.** Nunca ler clientes, pets, reservas, pagamentos ou
+<<<<<<< HEAD
   prontuário no site. A carteira de vacinação é só no app (acesso do
+=======
+  prontuário no site. A Carteira do Pet (vacinas, saúde e histórico) é só no app (acesso do
+>>>>>>> 8c6abb8 (last commit)
   parceiro por QR Code do tutor) — nunca expor aqui.
 - **Única escrita:** "Quero ser parceiro" → `leads_parceiros` (origem
   "site", aceite LGPD obrigatório, id sequencial igual ao `onSaveIncrement`
