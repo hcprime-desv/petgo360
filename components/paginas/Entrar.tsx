@@ -23,11 +23,7 @@ export default function Entrar() {
           <div className="card">
             <div className="ico"><PawPrint size={22} /></div>
             <h3>Sou tutor</h3>
-<<<<<<< HEAD
-            <p>Sua conta fica no app PetGo360: agendamentos, carteira de vacinação, pontos e cupons.</p>
-=======
             <p>Sua conta fica no app PetGo360: agendamentos, Carteira do Pet, pontos e cupons.</p>
->>>>>>> 8c6abb8 (last commit)
             <Lojas configuracao={c} />
           </div>
           <div className="card">

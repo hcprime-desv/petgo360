@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import {
-<<<<<<< HEAD
-  PawPrint, Store, MessageCircle, Settings2, ArrowRight, MapPin, Ticket, Syringe, Handshake, ShieldCheck, QrCode, BellRing, Users, Heart, TrendingUp, Building2,
-=======
   PawPrint, Store, MessageCircle, Settings2, ArrowRight, Stethoscope, Scale, MapPin, Ticket, Syringe, Handshake, ShieldCheck, QrCode, BellRing, Users, Heart, TrendingUp, Building2,
->>>>>>> 8c6abb8 (last commit)
 } from "lucide-react";
 import { useConfiguracao, useVitrine } from "@/components/public/AoVivo";
 import { ehExterno } from "@/lib/util";
@@ -87,11 +83,7 @@ export default function Home() {
             <nav className="hero-atalhos hero-atalhos-foto" aria-label="Atalhos">
               <Link href="/servicos"><MapPin size={20} color="#f36b21" />Serviços perto de você</Link>
               <Link href="/clube"><Ticket size={20} color="#14523d" />Clube Pet</Link>
-<<<<<<< HEAD
-              <Link href="/petgo360#vacinacao"><Syringe size={20} color="#f36b21" />Carteira de vacinação</Link>
-=======
               <Link href="/petgo360#carteira"><Syringe size={20} color="#f36b21" />Carteira do Pet</Link>
->>>>>>> 8c6abb8 (last commit)
               <Link href="/petgo360#whatsapp"><MessageCircle size={20} color="#14523d" />Atendimento no WhatsApp</Link>
               <Link href="/quero-ser-parceiro"><Handshake size={20} color="#f36b21" />Seja um parceiro</Link>
             </nav>
@@ -127,11 +119,7 @@ export default function Home() {
             <nav className="hero-atalhos" aria-label="Atalhos">
               <Link href="/servicos"><span className="ico"><MapPin size={16} /></span>Serviços perto de você</Link>
               <Link href="/clube"><span className="ico"><Ticket size={16} /></span>Clube Pet</Link>
-<<<<<<< HEAD
-              <Link href="/petgo360#vacinacao"><span className="ico"><Syringe size={16} /></span>Carteira de vacinação</Link>
-=======
               <Link href="/petgo360#carteira"><span className="ico"><Syringe size={16} /></span>Carteira do Pet</Link>
->>>>>>> 8c6abb8 (last commit)
               <Link href="/quero-ser-parceiro"><span className="ico"><Handshake size={16} /></span>Seja um parceiro</Link>
             </nav>
           </div>
@@ -163,11 +151,7 @@ export default function Home() {
           <h2 className="titulo">Um ecossistema, quatro experiências</h2>
           <p className="sub" style={{ marginBottom: 28 }}>Cada público usa o canal mais conveniente, compartilhando a mesma base e as mesmas regras.</p>
           <div className="grade4">
-<<<<<<< HEAD
-            <div className="card"><div className="ico"><PawPrint size={22} /></div><h3>PetGo360</h3><p>App do tutor com pets, carteira de vacinação digital, serviços, pontos, cupons e histórico.</p><Link href="/petgo360" className="card-link">Conhecer o app →</Link></div>
-=======
             <div className="card"><div className="ico"><PawPrint size={22} /></div><h3>PetGo360</h3><p>App do tutor com a Carteira do Pet (vacinas, saúde e histórico), serviços, pontos e cupons.</p><Link href="/petgo360" className="card-link">Conhecer o app →</Link></div>
->>>>>>> 8c6abb8 (last commit)
             <div className="card"><div className="ico"><Store size={22} /></div><h3>Parceiro</h3><p>App e portal web para serviços, agenda, clientes, vacinação, cupons, fidelidade e relatórios.</p><Link href="/quero-ser-parceiro" className="card-link">Para parceiros →</Link></div>
             <div className="card"><div className="ico"><MessageCircle size={22} /></div><h3>WhatsApp</h3><p>Busque, reserve e pague conversando — com a mesma reserva e o mesmo preço do app.</p><Link href="#whatsapp" className="card-link">Como funciona →</Link></div>
             <div className="card"><div className="ico"><Settings2 size={22} /></div><h3>Plataforma</h3><p>Gestão central de parceiros, regras, conteúdo, pagamentos e indicadores — com segurança e LGPD.</p><Link href="/paginas/como-funciona" className="card-link">Como funciona →</Link></div>
@@ -223,27 +207,6 @@ export default function Home() {
         </div>
       </section>
 
-<<<<<<< HEAD
-      {/* ── Carteira de vacinação ── */}
-      <section className="secao">
-        <div className="wrap grade2">
-          <div>
-            <div className="eyebrow">Carteira de Vacinação Digital</div>
-            <h2 className="titulo">A carteira é do seu pet — e fica com você</h2>
-            <p className="lead">No app PetGo360 você registra as vacinas e recebe lembrete da próxima dose. Quando um parceiro habilitado aplica a vacina, ela entra validada na carteira.</p>
-            <div className="passos" style={{ marginTop: 22 }}>
-              <div className="passo"><span>Você gera um <b>QR Code</b> no app, na hora do atendimento.</span></div>
-              <div className="passo"><span>O parceiro lê o código e registra vacina, lote, fabricante e próxima dose.</span></div>
-              <div className="passo"><span>O acesso expira sozinho. Sem o seu QR Code, ninguém vê a carteira.</span></div>
-            </div>
-          </div>
-          <div className="card" style={{ padding: 28 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}><span className="ico"><Syringe size={22} /></span><b style={{ fontSize: 18 }}>Como a carteira aparece no app</b></div>
-            {[["V10", "Validada pela clínica", true], ["Antirrábica", "Validada pela clínica", true], ["Gripe canina", "Declarada pelo tutor", false]].map(([nome, origem, ok]) => (
-              <div key={String(nome)} className="item-servico">
-                <div><b>{nome}</b><span className="mut" style={{ fontSize: 13 }}>{origem}</span></div>
-                <span className={`selo${ok ? "" : " selo-laranja"}`}>{ok ? <><ShieldCheck size={12} /> Validada</> : "Declarada"}</span>
-=======
       {/* ── Carteira do Pet ── */}
       <section className="secao">
         <div className="wrap grade2">
@@ -272,16 +235,11 @@ export default function Home() {
                   <div><b>{titulo}</b><span className="mut" style={{ fontSize: 13 }}>{quando}</span></div>
                 </div>
                 <span className={`selo${futuro ? " selo-laranja" : ""}`}>{selo}</span>
->>>>>>> 8c6abb8 (last commit)
               </div>
             ))}
             <div className="chips" style={{ marginTop: 14 }}>
               <span className="selo"><QrCode size={12} /> Acesso por QR Code</span>
-<<<<<<< HEAD
-              <span className="selo"><BellRing size={12} /> Lembrete da próxima dose</span>
-=======
               <span className="selo"><ShieldCheck size={12} /> Você escolhe o que liberar</span>
->>>>>>> 8c6abb8 (last commit)
             </div>
           </div>
         </div>
@@ -314,11 +272,7 @@ export default function Home() {
           <div>
             <div className="eyebrow">Sempre com você</div>
             <h2 className="titulo">O cuidado do seu pet na palma da mão</h2>
-<<<<<<< HEAD
-            <p className="sub">Agende e pague com segurança, acompanhe a carteira de vacinação, acumule pontos e use os cupons dos parceiros. Quem usa o app ganha mais benefícios.</p>
-=======
             <p className="sub">Agende e pague com segurança, acompanhe a Carteira do Pet, acumule pontos e use os cupons dos parceiros. Quem usa o app ganha mais benefícios.</p>
->>>>>>> 8c6abb8 (last commit)
             <Lojas configuracao={c} />
           </div>
         </div>

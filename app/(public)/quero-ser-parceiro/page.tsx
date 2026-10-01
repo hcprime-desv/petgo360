@@ -8,11 +8,7 @@ const BENEFICIOS = [
   { icone: Wallet, titulo: "Reserva já paga", texto: "O tutor paga antecipado e recebe o voucher. Menos falta, menos cobrança." },
   { icone: CalendarCheck, titulo: "Agenda organizada", texto: "Horários, confirmação, check-in e histórico em um lugar só." },
   { icone: Ticket, titulo: "Clube Pet", texto: "Publique cupons OFF e vantagens para atrair cliente novo e trazer de volta quem já veio." },
-<<<<<<< HEAD
-  { icone: Syringe, titulo: "Vacinação digital", texto: "Registre vacinas na carteira do pet lendo o QR Code do tutor." },
-=======
   { icone: Syringe, titulo: "Carteira do Pet", texto: "Com o QR Code do tutor, veja vacinas e saúde do pet e registre a vacina aplicada." },
->>>>>>> 8c6abb8 (last commit)
   { icone: BarChart3, titulo: "Repasses e relatórios", texto: "Acompanhe vendas, repasses, avaliações e recorrência." },
   { icone: Smartphone, titulo: "App e portal web", texto: "Opere pelo celular no dia a dia ou pelo computador no balcão." },
 ];

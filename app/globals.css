@@ -239,14 +239,11 @@ img { max-width: 100%; display: block; }
 .avaliacao:last-child { border-bottom: 0; }
 .resposta { margin-top: 8px; padding: 10px 12px; background: var(--menta); border-radius: 12px; font-size: 14px; }
 
-<<<<<<< HEAD
-=======
 /* Lista da Carteira do Pet */
 .lista-carteira { margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
 .lista-carteira li { padding: 14px 16px; background: #fff; border: 1px solid var(--linha); border-radius: 16px; color: var(--texto); line-height: 1.55; }
 .lista-carteira b { color: var(--tinta); }
 
->>>>>>> 8c6abb8 (last commit)
 /* Faixa do app */
 .app-faixa { display: grid; grid-template-columns: .8fr 1.2fr; gap: 30px; align-items: center; }
 .lojas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }

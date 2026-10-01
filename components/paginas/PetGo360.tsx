@@ -10,11 +10,7 @@ import CanaisTutor from "@/components/public/CanaisTutor";
 const RECURSOS = [
   { icone: CalendarCheck, titulo: "Agende e pague", texto: "Escolha parceiro e horário, pague antecipado e receba o voucher com QR Code." },
   { icone: PawPrint, titulo: "Carteira do pet", texto: "Dados, fotos, documentos e histórico de atendimentos de cada pet." },
-<<<<<<< HEAD
-  { icone: Syringe, titulo: "Vacinação digital", texto: "Carteira de vacinação com lembrete da próxima dose e registro validado pelo parceiro." },
-=======
   { icone: Syringe, titulo: "Carteira do Pet", texto: "Vacinas com aviso da próxima dose, saúde e todo o histórico de atendimentos do seu pet." },
->>>>>>> 8c6abb8 (last commit)
   { icone: Trophy, titulo: "Pontos e níveis", texto: "Cada agendamento e avaliação soma pontos. Quanto mais alto o nível, mais vantagens." },
   { icone: Ticket, titulo: "Cupons OFF", texto: "Resgate os cupons dos parceiros direto no agendamento." },
   { icone: BellRing, titulo: "Notificações", texto: "Confirmação, lembrete de horário, banho, vacina e ofertas perto de você." },
@@ -33,11 +29,7 @@ export default function PetGo360() {
           <div>
             <div className="eyebrow">App do tutor</div>
             <h1>PetGo360: tudo do seu pet, <span className="laranja">no seu bolso</span>.</h1>
-<<<<<<< HEAD
-            <p className="lead">Agende serviços, acompanhe a carteira de vacinação, acumule pontos e use os cupons dos parceiros. O que você começa no WhatsApp continua no app.</p>
-=======
             <p className="lead">Agende serviços, acompanhe a Carteira do Pet, acumule pontos e use os cupons dos parceiros. O que você começa no WhatsApp continua no app.</p>
->>>>>>> 8c6abb8 (last commit)
             <div id="baixar"><Lojas configuracao={c} /></div>
             {whats && <p className="mut" style={{ marginTop: 16 }}>Prefere começar pelo WhatsApp? <a href={whats} target="_blank" rel="noreferrer" style={{ color: "var(--g)", fontWeight: 700 }}><MessageCircle size={14} style={{ display: "inline" }} /> Fale com a gente</a></p>}
           </div>
@@ -68,19 +60,6 @@ export default function PetGo360() {
         <div className="wrap"><CanaisTutor configuracao={c} /></div>
       </section>
 
-<<<<<<< HEAD
-      <section id="vacinacao" className="secao">
-        <div className="wrap grade2">
-          <div>
-            <div className="eyebrow">Carteira de Vacinação Digital</div>
-            <h2 className="titulo">Sua carteira, suas regras</h2>
-            <p className="lead">A carteira é do pet e do tutor. Você pode registrar as vacinas que já tomou (ficam como &quot;declaradas&quot;). As aplicadas por um parceiro habilitado entram como &quot;validadas&quot;.</p>
-          </div>
-          <div className="passos">
-            <div className="passo"><span>No atendimento, abra a carteira no app e gere o <b>QR Code de acesso</b>.</span></div>
-            <div className="passo"><span>O parceiro lê o código pelo app ou pelo portal e registra vacina, lote, fabricante e próxima dose.</span></div>
-            <div className="passo"><span>O acesso expira sozinho. A carteira não é aberta pelo WhatsApp nem sem o seu QR Code.</span></div>
-=======
       <section id="carteira" className="secao">
         <div className="wrap grade2" style={{ alignItems: "start" }}>
           <div>
@@ -101,7 +80,6 @@ export default function PetGo360() {
               <div className="passo"><span>Ele vê os atendimentos feitos <b>na empresa dele</b>, nunca os de outros parceiros.</span></div>
               <div className="passo"><span>O acesso <b>expira sozinho</b>. A carteira não é aberta pelo WhatsApp.</span></div>
             </div>
->>>>>>> 8c6abb8 (last commit)
           </div>
         </div>
       </section>

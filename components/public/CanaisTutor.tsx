@@ -6,11 +6,7 @@ import { linkWhatsapp } from "@/lib/util";
 // O que o tutor faz em cada canal (documentação: 00_PetHub360_Ecossistema_
 // Modulos.md e 02_PetGo360_App_Cliente_WhatsApp.pdf). WhatsApp e app são
 // equivalentes para a jornada de compra; o que é SÓ do app vem das regras do
-<<<<<<< HEAD
-// projeto: carteira de vacinação (nunca pelo WhatsApp), pontos/Clube Pet
-=======
 // projeto: Carteira do Pet (nunca pelo WhatsApp), pontos/Clube Pet
->>>>>>> 8c6abb8 (last commit)
 // (fidelização é no app), carteira de cupons e histórico/documentos do pet.
 const PASSOS_WHATSAPP = [
   "Escreva do seu jeito o que o pet precisa — a assistente com IA entende o pedido.",
@@ -26,15 +22,9 @@ const COMPARATIVO: { item: string; whatsapp: boolean; nota?: string }[] = [
   { item: "Voucher com QR Code e lembretes", whatsapp: true },
   { item: "Usar cupons OFF dos parceiros", whatsapp: true },
   { item: "Acompanhar o atendimento", whatsapp: true },
-<<<<<<< HEAD
-  { item: "Carteira de vacinação digital", whatsapp: false },
-  { item: "Pontos, níveis e vantagens do Clube Pet", whatsapp: false },
-  { item: "Carteira de cupons, histórico e documentos do pet", whatsapp: false },
-=======
   { item: "Carteira do Pet (vacinas, saúde e histórico)", whatsapp: false },
   { item: "Pontos, níveis e vantagens do Clube Pet", whatsapp: false },
   { item: "Carteira de cupons e documentos do pet", whatsapp: false },
->>>>>>> 8c6abb8 (last commit)
 ];
 
 export default function CanaisTutor({ configuracao, titulo = true }: { configuracao: Configuracao; titulo?: boolean }) {

@@ -12,8 +12,11 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
+  query,
   runTransaction,
   setDoc,
+  updateDoc,
+  where,
   type Unsubscribe,
 } from "firebase/firestore";
 import { db } from "./client";
@@ -73,8 +76,25 @@ export async function criarComIdSequencial(colecao: string, data: Record<string,
     return String(proximo);
   });
   const agora = new Date();
-  await setDoc(doc(tenantColRef(colecao), id), { ...data, created_at: agora, updated_at: agora });
+  // Livro-razão/log (transacoes, auditoria…) só recebe created_at.
+  const imutavel = ["auditoria", "favoritos", "cupons_utilizacoes", "assinaturas_consumos", "fidelidade_movimentos", "transacoes", "mensagens", "historicos_pesos", "vantagens_utilizacoes"].includes(colecao);
+  await setDoc(doc(tenantColRef(colecao), id), imutavel ? { ...data, created_at: agora } : { ...data, created_at: agora, updated_at: agora });
   return id;
+}
+
+// Leitura pontual filtrada por um campo (ex.: sessão de checkout pelo token).
+export async function filtrarOnce(colecao: string, campo: string, valor: any): Promise<any[]> {
+  const snap = await getDocs(query(tenantColRef(colecao), where(campo, "==", valor)));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function atualizar(colecao: string, id: string, dados: Record<string, any>): Promise<void> {
+  await updateDoc(doc(tenantColRef(colecao), id), { ...dados, updated_at: new Date() });
+}
+
+export function tenantDocPath(colecao: string, id: string): string {
+  if (!TENANT_PATH) throw new Error("NEXT_PUBLIC_PETHUB_PATH não configurado.");
+  return `dados/${TENANT_PATH}/${colecao}/${id}`;
 }
 
 export function formatBytes(bytes: number): string {
