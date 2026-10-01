@@ -20,6 +20,9 @@ git push
 Passo a passo pra subir atualizações
 Toda vez que você alterar algum arquivo do projeto:
 
+se der probelma e estive tudo comitado faca
+git pull origin main --rebase
+
 1. Ver o que mudou (opcional, só pra conferir)
 
 
@@ -36,6 +39,45 @@ git commit -m "descreva a mudança aqui"
 
 
 git push
-Isso é tudo — não precisa repetir git remote add nem -u origin main de novo, só na primeira vez. Nas próximas, é só add → commit → push.
 
-Atenção: seu remote (git remote -v) está de volta pra github.com/hcprime-desv/portal181.git sem token embutido — se ainda não resolveu o bloqueio de permissão da organização (aprovação de admin) ou não trocou pro repositório pessoal, o git push vai voltar a dar o mesmo erro 403 de antes. Antes de repetir as atualizações, confirma qual caminho você seguiu pra resolver aquilo.
+se der erro
+Continua sendo o mesmo problema: a main do GitHub tem alterações que sua main local ainda não possui.
+Faça nesta ordem, dentro da pasta do projeto:
+git status
+
+Se estiver tudo commitado, execute:
+git pull origin main --rebase
+
+Se aparecer algo como Successfully rebased and updated refs/heads/main, execute:
+git push origin main
+
+Se aparecer conflito no git pull
+Veja quais arquivos estão em conflito:
+git status
+
+Corrija os conflitos nos arquivos e depois:
+git add .
+git rebase --continue
+
+Quando terminar:
+git push origin main
+
+Se aparecer unrelated histories
+Isso pode acontecer se você criou o projeto localmente e também criou o repositório no GitHub com um README, por exemplo. Nesse caso:
+git pull origin main --allow-unrelated-histories
+
+Resolva eventual conflito, depois:
+git add .
+git commit -m "Merge projeto local com repositorio remoto"
+git push origin main
+
+Se você quer simplesmente substituir o conteúdo do GitHub
+Se você tem certeza de que o projeto da sua máquina é o correto e não precisa de nada que esteja atualmente no GitHub:
+git fetch origin
+git push origin main --force-with-lease
+
+Isso fará sua main local prevalecer sobre a remota.
+Se você me mandar a saída deste comando:
+git pull origin main --rebase
+
+eu te digo exatamente o próximo comando a executar.
