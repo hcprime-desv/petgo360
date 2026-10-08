@@ -6,6 +6,7 @@ export const metadata: Metadata = { title: "Parceiros", description: "Vitrine de
 
 export default async function ParceirosPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
+  
   return (
     <>
       <section className="pagina-cab">
