@@ -563,7 +563,37 @@ html[data-tema="escuro"] .chat-launch-balao, html[data-tema="escuro"] .chat-laun
 .erro-box { background: #fdecee; color: #a11d2c; border: 1px solid #f5c2c8; border-radius: 12px; padding: 12px 14px; }
 .ok-box { background: #e8fbf1; color: #047857; border: 1px solid #bbf7d0; border-radius: 12px; padding: 12px 14px; }
 .card h2 { margin: 0 0 12px; font-size: 18px; color: var(--blue2); }
-@media (max-width: 640px) { .ficha { align-items: flex-start; } .ficha h1 { font-size: 22px; } }
+/* Grade de uma coluna que NUNCA passa da tela (a tabela larga empurrava a página e cortava os dados). */
+.vet { grid-template-columns: minmax(0, 1fr); }
+.vet > * { min-width: 0; }
+.ficha > div { min-width: 0; }
+.ficha p { overflow-wrap: anywhere; }
+/* Celular = cara de aplicativo: cartões cheios, botões em largura total e tabelas viram cartões. */
+@media (max-width: 640px) {
+  .vet { padding: 12px 12px 40px; gap: 12px; }
+  .vet-topo { flex-wrap: wrap; gap: 4px 12px; }
+  .vet-topo .marca { font-size: 16px; }
+  .vet .card { padding: 18px 16px; border-radius: 18px; }
+  .ficha { align-items: flex-start; gap: 14px; }
+  .ficha img, .ficha .sem-foto { width: 64px; height: 64px; }
+  .ficha h1 { font-size: 22px; }
+  .ficha p { font-size: 14px; }
+  .selo-saude { border-radius: 7px; font-size: 12.5px; }
+  .acoes-vet { flex-direction: column; }
+  .acoes-vet .btn, .acoes-form .btn { width: 100%; justify-content: center; }
+  .acoes-form { flex-direction: column-reverse; }
+  .campo input, .campo select, .campo textarea { font-size: 16px; } /* sem zoom automático no iPhone */
+  .tabela-cartoes thead { display: none; }
+  .tabela-cartoes, .tabela-cartoes tbody, .tabela-cartoes tr, .tabela-cartoes td { display: block; width: 100%; }
+  .tabela-cartoes tr { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+  .tabela-cartoes td { border: 0; padding: 3px 0; display: flex; justify-content: space-between; gap: 12px; }
+  .tabela-cartoes td[data-rotulo]::before { content: attr(data-rotulo); color: var(--muted); font-size: 12.5px; font-weight: 650; }
+  .tabela-cartoes td.cel-titulo { display: block; font-size: 15px; padding-bottom: 6px; }
+  .tabela-cartoes td.cel-texto { display: block; color: var(--muted); }
+  .tabela-cartoes td.cel-acao { display: block; padding-top: 8px; }
+  .tabela-cartoes td.cel-acao .btn { width: 100%; justify-content: center; }
+  .tabela-caixa { overflow: visible; }
+}
 html[data-tema="escuro"] .selo-saude.em_dia, html[data-tema="escuro"] .mini-selo { background: rgba(7,169,88,.18); color: #4ade80; }
 html[data-tema="escuro"] .selo-saude.atencao, html[data-tema="escuro"] .mini-selo.t { background: rgba(249,115,22,.18); color: #fdba74; }
 html[data-tema="escuro"] .selo-saude.atrasada, html[data-tema="escuro"] .alergia, html[data-tema="escuro"] .erro-box { background: rgba(227,41,60,.18); color: #ff7a88; border-color: rgba(227,41,60,.35); }

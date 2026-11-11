@@ -129,12 +129,12 @@ export default function CarteiraVet({ token }: { token: string }) {
       <div className="card">
         <h2>Vacinas</h2>
         {vacinas.length ? (
-          <div className="tabela-caixa"><table className="tabela"><thead><tr><th>Vacina</th><th>Aplicação</th><th>Lote</th><th>Próxima</th><th></th></tr></thead><tbody>
+          <div className="tabela-caixa"><table className="tabela tabela-cartoes"><thead><tr><th>Vacina</th><th>Aplicação</th><th>Lote</th><th>Próxima</th><th></th></tr></thead><tbody>
             {vacinas.map((v) => (
               <tr key={v.id}>
-                <td><b>{v.nome_vacina}</b><br /><small className="texto-mut">{v.dose}</small></td>
-                <td>{dataBr(v.aplicada_em)}</td><td>{v.lote || "—"}</td><td>{dataBr(v.proxima_dose_em)}</td>
-                <td>{v.validada ? <span className="mini-selo">Validado{v.profissional_nome ? ` · ${v.profissional_nome}` : ""}</span>
+                <td className="cel-titulo"><b>{v.nome_vacina}</b><br /><small className="texto-mut">{v.dose}</small></td>
+                <td data-rotulo="Aplicação">{dataBr(v.aplicada_em)}</td><td data-rotulo="Lote">{v.lote || "—"}</td><td data-rotulo="Próxima">{dataBr(v.proxima_dose_em)}</td>
+                <td className="cel-acao">{v.validada ? <span className="mini-selo">Validado{v.profissional_nome ? ` · ${v.profissional_nome}` : ""}</span>
                   : valido && !String(v.id).startsWith("novo") ? <button type="button" className="btn btn-outline" style={{ padding: "6px 10px", fontSize: 13 }} onClick={() => validar(v)}><CheckCircle2 size={14} /> Validar</button>
                   : <span className="mini-selo t">Declarado pelo tutor</span>}</td>
               </tr>
@@ -146,10 +146,10 @@ export default function CarteiraVet({ token }: { token: string }) {
       {registros.length ? (
         <div className="card">
           <h2>Histórico de saúde</h2>
-          <div className="tabela-caixa"><table className="tabela"><thead><tr><th>Data</th><th>Registro</th><th>Detalhes</th><th></th></tr></thead><tbody>
+          <div className="tabela-caixa"><table className="tabela tabela-cartoes"><thead><tr><th>Registro</th><th>Data</th><th>Detalhes</th><th></th></tr></thead><tbody>
             {registros.map((r) => (
-              <tr key={r.id}><td>{dataBr(r.data_em)}</td><td><b>{r.titulo}</b></td><td>{r.descricao}{r.proxima_em ? <><br /><small>Próxima: {dataBr(r.proxima_em)}</small></> : null}</td>
-                <td><span className={`mini-selo${r.validado ? "" : " t"}`}>{r.validado ? "Validado" : "Declarado"}</span></td></tr>
+              <tr key={r.id}><td className="cel-titulo"><b>{r.titulo}</b></td><td data-rotulo="Data">{dataBr(r.data_em)}</td><td className="cel-texto">{r.descricao}{r.proxima_em ? <><br /><small>Próxima: {dataBr(r.proxima_em)}</small></> : null}</td>
+                <td className="cel-acao"><span className={`mini-selo${r.validado ? "" : " t"}`}>{r.validado ? "Validado" : "Declarado"}</span></td></tr>
             ))}
           </tbody></table></div>
         </div>
