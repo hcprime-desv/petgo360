@@ -11,6 +11,9 @@ const nextConfig = {
   // (par listarX/subscribeX) e os componentes client em components/public.
   output: "standalone",
   reactStrictMode: true,
+  // Tipos conferidos pelo `pnpm typecheck` (tsconfig.typecheck.json, @types/react 19 do site);
+  // no monorepo o `next build` acusa erro falso de React 18 x 19 (ver CLAUDE.md do core360).
+  typescript: { ignoreBuildErrors: true },
   // Sem isso, o Next detecta um lockfile solto num diretório acima (fora
   // deste projeto, ex: outro repo no mesmo D:\) e assume ELE como raiz do
   // "monorepo" — o output de `output: "standalone"` sai aninhado num
