@@ -129,3 +129,8 @@ export function formatBytes(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
 }
+
+// Grava com id escolhido (ex.: ocorrência de pet perdido + o contato dela com o MESMO id).
+export async function gravarComId(colecao: string, id: string, dados: Record<string, any>): Promise<void> {
+  await setDoc(doc(tenantColRef(colecao), id), gravar(dados));
+}

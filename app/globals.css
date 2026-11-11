@@ -600,6 +600,56 @@ html[data-tema="escuro"] .selo-saude.atrasada, html[data-tema="escuro"] .alergia
 html[data-tema="escuro"] .ok-box { background: rgba(7,169,88,.18); color: #4ade80; border-color: rgba(7,169,88,.35); }
 html[data-tema="escuro"] .lista-check li { color: #cfdaea; }
 
+/* Pets perdidos e encontrados (/perdidos) — como os "procurados" do Portal 181 */
+.pp-acoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 26px; }
+.pp-acao { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; border: 0; border-radius: 18px; padding: 20px; cursor: pointer; font: inherit; }
+.pp-acao b { font-size: 18px; margin-top: 6px; }
+.pp-acao span { font-size: 13.5px; opacity: .85; }
+.pp-acao.perdi { background: #fdecee; color: #a11d2c; }
+.pp-acao.achei { background: #e8fbf1; color: #047857; }
+.pp-acao.info { background: var(--bg); color: var(--blue2); cursor: default; }
+.pp-barra { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.pp-abas { display: inline-flex; background: var(--bg); border-radius: 12px; padding: 4px; }
+.pp-abas button { border: 0; background: none; font: inherit; font-weight: 750; padding: 9px 18px; border-radius: 9px; cursor: pointer; color: var(--muted); }
+.pp-abas button.ativa { background: var(--blue); color: #fff; }
+.pp-busca { flex: 1; max-width: 360px; min-width: 200px; border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; font: inherit; background: transparent; color: inherit; }
+.pp-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+.pp-cartao { background: #fff; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 6px 20px rgba(20, 55, 90, .05); }
+.pp-foto { position: relative; overflow: hidden; width: 100%; border: 0; padding: 0; cursor: zoom-in; aspect-ratio: 1 / 1; background: var(--bg); display: grid; place-items: center; color: var(--muted); }
+.pp-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pp-tag { position: absolute; top: 10px; left: 10px; color: #fff; font-size: 11px; font-weight: 850; letter-spacing: .08em; padding: 5px 9px; border-radius: 7px; }
+.pp-tag.estatica { position: static; display: inline-block; }
+.pp-tag.perdido { background: #e3293c; }
+.pp-tag.encontrado { background: #07a958; }
+.pp-info { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.pp-info strong { font-size: 18px; }
+.pp-info p { margin: 0; color: var(--muted); font-size: 13.5px; display: flex; align-items: center; gap: 4px; }
+.pp-info .btn { margin-top: auto; justify-content: center; }
+.pp-info p + .btn { margin-top: 12px; }
+.pp-fotos { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 16px; }
+.pp-mini { position: relative; width: 80px; height: 80px; border-radius: 12px; overflow: hidden; background: var(--bg); display: grid; place-items: center; }
+.pp-mini img { width: 100%; height: 100%; object-fit: cover; }
+.pp-mini button { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: #e3293c; color: #fff; display: grid; place-items: center; cursor: pointer; }
+.pp-mini.add { border: 1px solid var(--line); cursor: pointer; color: var(--blue); align-content: center; gap: 2px; }
+.pp-mini.add small { font-size: 11px; font-weight: 700; }
+@media (max-width: 760px) {
+  .pp-acoes { grid-template-columns: 1fr; gap: 10px; }
+  .pp-acao { flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: 12px; padding: 14px 16px; }
+  .pp-acao b { margin-top: 0; font-size: 16px; }
+  .pp-acao span { flex-basis: 100%; }
+  .pp-busca { max-width: none; }
+  .pp-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .pp-cartao { border-radius: 14px; }
+  .pp-info { padding: 10px 10px 12px; }
+  .pp-info strong { font-size: 15px; }
+  .pp-info p { font-size: 12px; }
+  .pp-info .btn { padding: 8px 10px; font-size: 13px; }
+}
+html[data-tema="escuro"] .pp-cartao { background: var(--sup, #0f2b60); }
+html[data-tema="escuro"] .pp-acao.perdi { background: rgba(227,41,60,.18); color: #ff7a88; }
+html[data-tema="escuro"] .pp-acao.achei { background: rgba(7,169,88,.18); color: #4ade80; }
+html[data-tema="escuro"] .pp-acao.info, html[data-tema="escuro"] .pp-abas, html[data-tema="escuro"] .pp-foto, html[data-tema="escuro"] .pp-mini { background: rgba(12, 38, 88, .6); }
+
 /* >>> ADMIN DO SITE (monorepo) — gerado por scripts/copiar-admin-site.py */
 /* ══ /admin dos SITES — kit do monorepo (packages/layout/src/sites/admin/admin.css), aplicado por
    scripts/copiar-admin-site.py entre os marcadores. Usa as variáveis do site padrão (--navy, --blue, --line...). ══ */

@@ -14,6 +14,7 @@ const LINKS = [
   { href: "/#como-funciona", rotulo: "Como funciona" },
   { href: "/#modulos", rotulo: "Módulos e serviços" },
   { href: "/#veterinarios", rotulo: "Para veterinários" },
+  { href: "/perdidos", rotulo: "Pets perdidos" },
   { href: "/#contato", rotulo: "Contato" },
 ];
 
@@ -71,6 +72,7 @@ export function Footer({ config }: { config: ConfigSite }) {
           <div>
             <h4>Profissionais</h4>
             <Link href="/#veterinarios">Veterinários e pet shops</Link>
+            <Link href="/perdidos">Pets perdidos e encontrados</Link>
             <Link href="/#contato">Contato</Link>
             {c.email && <a href={`mailto:${c.email}`}>{c.email}</a>}
             {c.whatsapp && <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g, "").replace(/^55/, "")}`} target="_blank" rel="noreferrer">WhatsApp {c.whatsapp}</a>}

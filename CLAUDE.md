@@ -14,6 +14,10 @@ parceiros, clube, pagamento) foi REMOVIDO: o produto atual virou o PetVet
   tutor), abre o acesso (10 min para abrir; 1 h liberado) e grava o que o
   profissional registrar/validar em `registros_profissionais` (caixa de
   entrada que o app importa) + `notificacoes` para o tutor.
+- `/perdidos` — **Pets perdidos e encontrados** (grátis, 11/11/2026): lista em tempo real (abas Perdidos/Encontrados,
+  busca), "Perdi meu pet", "Encontrei um pet" e "Vi este pet" (`components/site/PetsPerdidos.tsx`; regras em
+  `lib/compartilhado/achados.ts`). Grava `pets_ocorrencias` + `pets_ocorrencias_contatos` (canal "site"); o telefone NUNCA
+  aparece no site. O reconhecimento da foto e os avisos são do back-end petall360.
 - `/privacidade` e `/termos-de-uso` — das Páginas do painel (status
   Publicado); sem texto lá, vale `lib/textosLegais.ts` (revisar com o
   jurídico antes de publicar nas lojas).
