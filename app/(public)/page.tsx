@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { ChevronRight, Clock, Download, FileText, QrCode, ShieldCheck, Smartphone, Stethoscope, Syringe, CheckCircle2, Lock } from "lucide-react";
 import Modulos from "@/components/Modulos";
+import Contato from "@/components/site/Contato";
+import Perguntas from "@/components/site/Perguntas";
+import { lerConfigSite } from "@/lib/site";
 
 // Página inicial do PetGo360 (layout do site padrão: hero + hero-numeros,
 // faixa de cartões, como funciona, módulos, veterinários, baixar).
@@ -11,7 +14,9 @@ const PASSOS = [
   { titulo: "Ele valida na hora", texto: "O veterinário registra a vacina e você recebe o aviso: “Validado por profissional”." },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const config = await lerConfigSite();
+  const play = config.googlePlay, store = config.appStore;
   return (
     <>
       <section className="hero" id="inicio">
@@ -94,12 +99,15 @@ export default function HomePage() {
               <p>Disponível para Android e iPhone. Comece grátis com 1 pet e as vacinas.</p>
             </div>
             <div className="cta-acoes">
-              <a href="#" className="loja" aria-label="Google Play (em breve)"><span className="loja-ic">▶</span><span><small>Em breve no</small><b>Google Play</b></span></a>
-              <a href="#" className="loja" aria-label="App Store (em breve)"><span className="loja-ic"></span><span><small>Em breve na</small><b>App Store</b></span></a>
+              <a href={play || "#"} className="loja" aria-label={play ? "Baixar no Google Play" : "Google Play (em breve)"} target={play ? "_blank" : undefined} rel="noreferrer"><span className="loja-ic">▶</span><span><small>{play ? "Disponível no" : "Em breve no"}</small><b>Google Play</b></span></a>
+              <a href={store || "#"} className="loja" aria-label={store ? "Baixar na App Store" : "App Store (em breve)"} target={store ? "_blank" : undefined} rel="noreferrer"><span className="loja-ic"></span><span><small>{store ? "Disponível na" : "Em breve na"}</small><b>App Store</b></span></a>
             </div>
           </div>
         </div>
       </section>
+
+      <Perguntas />
+      <Contato config={config} />
     </>
   );
 }

@@ -9,9 +9,13 @@
 // ("Validado por profissional"). Regras únicas aqui; o painel copia para o
 // app e o site com `npm run sync:app` (só importa desta pasta).
 //
-// Não é só carteirinha: é o GESTOR DA VIDA DO PET. Grátis = 1 pet + vacinas;
-// o resto é contratado por MÓDULO (recursos do app e serviços de parceiros:
-// plano de saúde, funeral, seguro...).
+// Não é só carteirinha: é o GESTOR DA VIDA DO PET. Grátis = 1 pet + vacinas.
+// MODELO DE PLANOS (dono, 11/11/2026): a ASSINATURA base é o "Backup na nuvem"
+// (troque de celular sem perder nada), vendida PELA LOJA (compra dentro do
+// app, RevenueCat): R$ 3,90/mês ou R$ 37,90/ano, 7 dias grátis, 500 MB por
+// conta. Por cima dela, a VITRINE de COMBOS (aditivos: WhatsApp + histórico,
+// mais pets, plano de saúde, funeral, seguro...), só para ASSINANTES.
+// Quem tem nível "99" (conta de teste/equipe) abre tudo.
 // Coleções: clientes (tutor; recursos_ate/servicos_ate), pets, vacinacoes,
 // alimentacoes_pets, registros_saude, acessos_carteiras_pets (QR),
 // modulos_app (catálogo), assinaturas (contratações) + pagamentos (Pix),
@@ -41,9 +45,10 @@ const txt = (v: any, max = 500) => String(v ?? "").trim().slice(0, max);
 //   contratação aprovada no painel e botão "Acionar" na carteira do pet.
 // Um módulo pode liberar vários recursos (ex.: pacote "Completo").
 // No tutor (clientes): recursos_ate { recurso: ms } e servicos_ate { codigo: ms }.
-export const RECURSOS_APP = ["pets_ilimitados", "historico_saude", "anexos", "alimentacao", "pdf_completo", "alertas_whatsapp"] as const;
+export const RECURSOS_APP = ["backup_nuvem", "pets_ilimitados", "historico_saude", "anexos", "alimentacao", "pdf_completo", "alertas_whatsapp"] as const;
 export type RecursoApp = (typeof RECURSOS_APP)[number];
 export const ROTULOS_RECURSO: Record<RecursoApp, string> = {
+  backup_nuvem: "Backup na nuvem (troque de celular sem perder nada)",
   pets_ilimitados: "Mais de um pet",
   historico_saude: "Histórico de saúde (vermífugo, antipulgas, consultas, cirurgias, exames, medicação)",
   anexos: "Fotos de laudos, exames e da carteirinha antiga",
@@ -53,28 +58,32 @@ export const ROTULOS_RECURSO: Record<RecursoApp, string> = {
 };
 export const GRATIS = { maxPets: 1, descricao: "1 pet e as vacinas (com QR Code para o veterinário e PDF das vacinas)" };
 
-export const TIPOS_MODULO = ["recurso", "servico"] as const;
+// assinatura = o plano base (Backup na nuvem, pela loja); recurso/servico = COMBOS da vitrine (só para assinantes)
+export const TIPOS_MODULO = ["assinatura", "recurso", "servico"] as const;
+export const RECURSO_ASSINATURA: RecursoApp = "backup_nuvem";
 export const CATEGORIAS_SERVICO = ["plano_saude", "plano_funeral", "seguro", "outro"] as const;
 export const ROTULOS_CATEGORIA_SERVICO: Record<string, string> = { plano_saude: "Plano de saúde pet", plano_funeral: "Plano funeral pet", seguro: "Seguro pet", outro: "Outro serviço" };
 export const PERIODOS = ["mensal", "anual"] as const;
 export type Periodo = (typeof PERIODOS)[number];
 export const diasDoPeriodo = (p: Periodo) => (p === "anual" ? 365 : 30);
 
-// Catálogo inicial (o painel edita preços, textos e parceiros; valores de exemplo).
+// Catálogo inicial (o painel edita preços, textos e parceiros). `assinatura` = o plano base
+// (preço da LOJA; ids dos produtos nas lojas/RevenueCat em produto_loja_*); os demais = COMBOS da vitrine.
+export const ASSINATURA_PADRAO = { dias_gratis: 7, limite_mb: 500, preco_mensal: 3.9, preco_anual: 37.9 };
 export const CATALOGO_PADRAO: Record<string, any>[] = [
-  { codigo: "completo", nome: "PetGo360 Completo", tipo: "recurso", recursos: [...RECURSOS_APP], preco_mensal: 5.9, preco_anual: 49.9, destaque: true, ordem: 1,
-    descricao: "Tudo do app: pets ilimitados, histórico de saúde com fotos, alimentação, PDF completo e alertas por WhatsApp." },
-  { codigo: "mais_pets", nome: "Mais pets", tipo: "recurso", recursos: ["pets_ilimitados"], preco_mensal: 1.9, preco_anual: 17.9, ordem: 2, descricao: "Cadastre todos os seus pets." },
-  { codigo: "saude", nome: "Saúde completa", tipo: "recurso", recursos: ["historico_saude", "anexos"], preco_mensal: 2.9, preco_anual: 27.9, ordem: 3,
-    descricao: "Vermífugo, antipulgas, consultas, cirurgias, exames e medicação, com fotos de laudos." },
-  { codigo: "alimentacao", nome: "Alimentação", tipo: "recurso", recursos: ["alimentacao"], preco_mensal: 0.9, preco_anual: 8.9, ordem: 4, descricao: "Ração, quantidade diária, frequência e dietas especiais." },
-  { codigo: "pdf_completo", nome: "Carteirinha completa em PDF", tipo: "recurso", recursos: ["pdf_completo"], preco_mensal: 0.9, preco_anual: 8.9, ordem: 5, descricao: "PDF com vacinas, alimentação e histórico, para viagens e hotéis." },
-  { codigo: "alertas_whatsapp", nome: "Alertas por WhatsApp", tipo: "recurso", recursos: ["alertas_whatsapp"], preco_mensal: 1.9, preco_anual: 17.9, ordem: 6, descricao: "Aviso no WhatsApp quando vacina ou reforço estiver chegando." },
-  { codigo: "plano_saude", nome: "Plano de saúde pet", tipo: "servico", categoria: "plano_saude", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 10, parceiro: "",
+  { codigo: "backup", nome: "PetGo360 Backup na nuvem", tipo: "assinatura", recursos: ["backup_nuvem"], preco_mensal: 3.9, preco_anual: 37.9, dias_gratis: 7, limite_mb: 500,
+    produto_loja_mensal: "petgo360_backup_mensal", produto_loja_anual: "petgo360_backup_anual", destaque: true, ordem: 1, icone: "cloud-check-outline",
+    descricao: "Seus pets, vacinas e registros guardados na nuvem: troque de celular sem perder nada. 7 dias grátis." },
+  { codigo: "combo_whatsapp", nome: "Combo WhatsApp + Histórico", tipo: "recurso", recursos: ["alertas_whatsapp", "historico_saude", "anexos"], preco_mensal: 2.9, preco_anual: 27.9, ordem: 2, icone: "whatsapp",
+    descricao: "Carteira e alertas de vacina pelo WhatsApp e o histórico de atendimentos (vermífugo, consultas, cirurgias, exames, medicação) com fotos de laudos." },
+  { codigo: "mais_pets", nome: "Mais pets", tipo: "recurso", recursos: ["pets_ilimitados"], preco_mensal: 1.9, preco_anual: 17.9, ordem: 3, icone: "paw", descricao: "Cadastre todos os seus pets." },
+  { codigo: "alimentacao", nome: "Alimentação", tipo: "recurso", recursos: ["alimentacao"], preco_mensal: 0.9, preco_anual: 8.9, ordem: 4, icone: "food-drumstick-outline", descricao: "Ração, quantidade diária, frequência e dietas especiais." },
+  { codigo: "pdf_completo", nome: "Carteirinha completa em PDF", tipo: "recurso", recursos: ["pdf_completo"], preco_mensal: 0.9, preco_anual: 8.9, ordem: 5, icone: "file-pdf-box", descricao: "PDF com vacinas, alimentação e histórico, para viagens e hotéis." },
+  { codigo: "plano_saude", nome: "Combo Plano de saúde pet", tipo: "servico", categoria: "plano_saude", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 10, parceiro: "", icone: "hospital-box-outline",
     descricao: "Consultas, exames e emergência com a rede do parceiro. Preço conforme o porte e a idade do pet." },
-  { codigo: "plano_funeral", nome: "Plano funeral pet (Despedida Tranquila)", tipo: "servico", categoria: "plano_funeral", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 11, parceiro: "",
+  { codigo: "plano_funeral", nome: "Plano funeral pet (Despedida Tranquila)", tipo: "servico", categoria: "plano_funeral", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 11, parceiro: "", icone: "flower-outline",
     descricao: "Remoção, cremação e cerimônia, com assistência 24h acionada pelo app." },
-  { codigo: "seguro_pet", nome: "Seguro pet", tipo: "servico", categoria: "seguro", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 12, parceiro: "",
+  { codigo: "seguro_pet", nome: "Seguro pet", tipo: "servico", categoria: "seguro", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 12, parceiro: "", icone: "shield-plus-outline",
     descricao: "Cobertura de acidentes, assistência e urgência. Preço conforme o pet." },
 ];
 
@@ -102,12 +111,48 @@ export function configAssinatura(registros: any[]): ConfigAssinatura {
   };
 }
 
+// Conta de TESTE / equipe com nível "99": abre tudo (sem cobrança).
+export const acessoTotal = (cliente: Record<string, any> | null | undefined) => String(cliente?.nivel ?? "") === "99";
 // O tutor tem o recurso agora?
 export function temRecurso(cliente: Record<string, any> | null | undefined, recurso: RecursoApp, agora = Date.now()): boolean {
-  return (ms(cliente?.recursos_ate?.[recurso]) ?? 0) > agora;
+  return acessoTotal(cliente) || (ms(cliente?.recursos_ate?.[recurso]) ?? 0) > agora;
 }
 export function servicoAtivo(cliente: Record<string, any> | null | undefined, codigo: string, agora = Date.now()): boolean {
-  return (ms(cliente?.servicos_ate?.[codigo]) ?? 0) > agora;
+  return acessoTotal(cliente) || (ms(cliente?.servicos_ate?.[codigo]) ?? 0) > agora;
+}
+/** Assinante do plano base (Backup na nuvem) — inclui o período de teste grátis. */
+export const assinante = (cliente: Record<string, any> | null | undefined, agora = Date.now()) => temRecurso(cliente, RECURSO_ASSINATURA, agora);
+/** Em teste grátis agora? (fim do teste no futuro e sem período pago além dele) */
+export function emTesteGratis(cliente: Record<string, any> | null | undefined, agora = Date.now()): boolean {
+  const fimTeste = ms(cliente?.teste_gratis_ate) ?? 0;
+  return !acessoTotal(cliente) && fimTeste > agora && (ms(cliente?.recursos_ate?.[RECURSO_ASSINATURA]) ?? 0) <= fimTeste;
+}
+export const podeTesteGratis = (cliente: Record<string, any> | null | undefined) => !acessoTotal(cliente) && !cliente?.teste_gratis_usado_em;
+/** Começa os dias grátis da assinatura (uma vez por conta). Na loja, o teste é a oferta introdutória; aqui, o modo simulado. */
+export function planejarTesteGratis(cliente: Record<string, any>, modulo: Record<string, any>, agora = Date.now()) {
+  if (!podeTesteGratis(cliente)) throw new Error("O teste grátis já foi usado nesta conta.");
+  if (modulo?.tipo !== "assinatura") throw new Error("O teste grátis é da assinatura.");
+  const dias = Number(modulo.dias_gratis) || ASSINATURA_PADRAO.dias_gratis;
+  const fim = agora + dias * DIA;
+  const recursos = { ...(cliente.recursos_ate ?? {}) } as Record<string, number>;
+  for (const r of modulo.recursos ?? [RECURSO_ASSINATURA]) recursos[r] = Math.max(ms(recursos[r]) ?? 0, fim);
+  return {
+    patchCliente: { recursos_ate: recursos, teste_gratis_usado_em: agora, teste_gratis_ate: fim },
+    notificacao: {
+      id_clientes: String(cliente.id), id_pets: null, tipo: "assinatura", canal: "app", modulo: "assinatura",
+      titulo: `${dias} dias grátis do ${modulo.nome}`, mensagem: `Seu backup na nuvem está ligado até ${new Date(fim).toLocaleDateString("pt-BR")}.`,
+      status: "enviada", enviada_em: agora, lida_em: null,
+    },
+  };
+}
+/** Valor por mês do anual ("R$ 3,16 por mês, pago uma vez por ano"). */
+export const porMesDoAnual = (m: Record<string, any>) => Math.round(((Number(m?.preco_anual) || 0) / 12) * 100) / 100;
+/** Espaço do backup: limite do plano (MB). */
+export const LIMITE_BACKUP_MB = ASSINATURA_PADRAO.limite_mb;
+export function problemaEspacoBackup(cliente: Record<string, any> | null | undefined, bytesNovos: number, limiteMb = LIMITE_BACKUP_MB): string | null {
+  if (acessoTotal(cliente)) return null;
+  const usado = Number(cliente?.armazenamento_bytes) || 0;
+  return usado + bytesNovos > limiteMb * 1024 * 1024 ? `Espaço do backup esgotado (${limiteMb} MB). Apague fotos antigas ou fale com o suporte.` : null;
 }
 export const recursosAtivos = (cliente: Record<string, any> | null | undefined, agora = Date.now()) => RECURSOS_APP.filter((r) => temRecurso(cliente, r, agora));
 // Módulos que liberam um recurso (para oferecer na hora do bloqueio).
@@ -116,10 +161,11 @@ export const modulosQueLiberam = (catalogo: any[], recurso: RecursoApp) =>
 
 export function motivoLimitePets(cliente: Record<string, any> | null | undefined, petsAtivos: number, agora = Date.now()): string | null {
   if (temRecurso(cliente, "pets_ilimitados", agora) || petsAtivos < GRATIS.maxPets) return null;
-  return `O plano grátis tem ${GRATIS.maxPets} pet. Contrate o módulo "Mais pets" (ou o Completo) para cadastrar todos.`;
+  return `O plano grátis tem ${GRATIS.maxPets} pet. Assine o Backup na nuvem e some o combo "Mais pets" para cadastrar todos.`;
 }
 export function motivoBloqueio(cliente: Record<string, any> | null | undefined, recurso: RecursoApp, agora = Date.now()): string | null {
-  return temRecurso(cliente, recurso, agora) ? null : `Este recurso faz parte de um módulo: ${ROTULOS_RECURSO[recurso]}.`;
+  if (temRecurso(cliente, recurso, agora)) return null;
+  return recurso === RECURSO_ASSINATURA ? "Recurso da assinatura Backup na nuvem." : `Recurso de um combo para assinantes: ${ROTULOS_RECURSO[recurso]}.`;
 }
 
 // ── Saúde: status das vacinas ────────────────────────────────────────────
@@ -393,6 +439,7 @@ export function planejarContratacao(p: { cliente: Record<string, any>; modulo: R
   const agora = p.agora ?? Date.now();
   const m = p.modulo;
   if (!m || m.status === "inativo") throw new Error("Módulo indisponível.");
+  if (m.tipo !== "assinatura" && !assinante(p.cliente, agora)) throw new Error("Os combos são para assinantes. Assine o Backup na nuvem (7 dias grátis) e depois some os combos que quiser.");
   if (!(PERIODOS as readonly string[]).includes(p.periodo)) throw new Error("Escolha mensal ou anual.");
   const consulta = sobConsulta(m);
   const valor = consulta ? 0 : precoDoModulo(m, p.periodo);
@@ -493,13 +540,12 @@ ${p.completo ? `<h2>Alimentação</h2>${ali.length ? `<table><tr><th>Ração/ali
 </body></html>`;
 }
 
-// ── Dados no CELULAR + backup na nuvem (decisão do dono, 06/11/2026) ─────
-// Pets, vacinas, saúde e alimentação ficam no aparelho do tutor. Quem tem
-// QUALQUER módulo pago ganha o backup: o app sincroniza com o banco e, num
-// celular novo, os dados voltam. Sem módulo: só no aparelho (o app avisa).
+// ── Dados no CELULAR + backup na nuvem ───────────────────────────────────
+// Pets, vacinas, saúde e alimentação ficam no aparelho do tutor. O BACKUP é a
+// ASSINATURA (dono, 11/11/2026): o app sincroniza com o banco e, num celular
+// novo, os dados voltam. Sem assinatura: só no aparelho (o app avisa).
 export function temBackup(cliente: Record<string, any> | null | undefined, agora = Date.now()): boolean {
-  const vale = (mapa: any) => Object.values(mapa ?? {}).some((v) => (ms(v) ?? 0) > agora);
-  return vale(cliente?.recursos_ate) || vale(cliente?.servicos_ate);
+  return assinante(cliente, agora);
 }
 export const COLECOES_DO_APARELHO = ["pets", "vacinacoes", "registros_saude", "alimentacoes_pets"] as const;
 

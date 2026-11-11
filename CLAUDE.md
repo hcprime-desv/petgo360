@@ -18,6 +18,19 @@ parceiros, clube, pagamento) foi REMOVIDO: o produto atual virou o PetVet
   Publicado); sem texto lá, vale `lib/textosLegais.ts` (revisar com o
   jurídico antes de publicar nas lojas).
 
+## Funções comuns dos sites (11/11/2026, padrão p2pcorp)
+- `/admin` = kit do monorepo (`python scripts/copiar-admin-site.py petgo`; NÃO editar `lib/admin/*` nem
+  `components/admin/*` aqui, menos `lib/admin/site.tsx`). Login = `usuarios` do tenant (adm.petgo360 /
+  petgo360@p2pcorp.com.br). Cadastros com as MESMAS coleções do admsite360: `configuracoes_site` (tema, contatos,
+  redes, links das lojas, SEO, chat, formulário), `paginas_site` (o `/[slug]` também lê a antiga `paginas`),
+  `perguntas_frequentes`, `avisos_site`, `leads_site` (Interessados), Usuários e Grupos.
+- Público: `lib/site.ts` (servidor + regras) e `lib/siteAoVivo.ts` (hooks do navegador); `components/site/`
+  Avisos (faixa/janela), Perguntas, Contato (→ leads_site) e ChatSite.
+- Chat = MOTOR do WhatsApp (`python scripts/copiar-chat-site.py petgo` → `components/chat/`), ligado por
+  `NEXT_PUBLIC_CHAT_PATH=dados/PETGO360` (back-end petall360 atende o canal site); sem ela o chat não aparece.
+- Tema: `python scripts/aplicar-tema-sites.py petgo`; padrão escuro ou o "Tema do site" da Configuração.
+- Repositório: https://github.com/hcprime-desv/petgo360.git (`bash scripts/publicar-site.sh petgo <url> "msg" --enviar`).
+
 ## Regras e dados
 - Regras em `lib/compartilhado/` = CÓPIA do painel (`apps/petgo360/shared/
   compartilhado`, `npm run sync:app` lá) — não editar aqui.

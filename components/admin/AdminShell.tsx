@@ -1,0 +1,173 @@
+"use client";
+// CÓPIA gerada por scripts/copiar-admin-site.py — NÃO edite aqui: altere em packages/layout/src/sites/admin e copie de novo.
+
+// /admin dos SITES — moldura: login (sem sessão), menu lateral com o que o usuário pode abrir, topo com o título, o
+// botão claro/escuro e o usuário, e o aviso flutuante. Marca, menu e cadastros vêm de lib/admin/site.tsx (SITE_ADMIN).
+import Link from "next/link";
+import { IBM_Plex_Sans } from "next/font/google";
+import { usePathname } from "next/navigation";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { ExternalLink, KeyRound, LogOut, Menu, Moon, Sun, X } from "lucide-react";
+import { entrar, lerSessao, pode, revalidarSessao, sair, type Sessao } from "@/lib/admin/sessao";
+import { SITE_ADMIN } from "@/lib/admin/site";
+
+// Fonte das aplicações web (IBM Plex Sans): o /admin tem o mesmo visual dos painéis (admin-escuro-azul.css).
+const plex = IBM_Plex_Sans({ subsets: ["latin"], weight: ["300", "400", "500", "600"], variable: "--fonte-admin", display: "swap" });
+import { ouvir } from "@/lib/admin/banco";
+
+// Marca do /admin: a fixa do site (SITE_ADMIN) ou, nos sites gerados, a da Configuração do site ao vivo (logo, logo para fundo
+// escuro e nome); sem logo, o nome em texto.
+type Marca = { nome: string; logo: string; logoBranco: string };
+function useMarca(): Marca {
+  const [m, setM] = useState<Marca>({ nome: SITE_ADMIN.nome, logo: SITE_ADMIN.logo, logoBranco: SITE_ADMIN.logoBranco });
+  useEffect(() => {
+    if (!SITE_ADMIN.marcaAoVivo) return;
+    try {
+      return ouvir("configuracoes_site", (docs) => {
+        const c = docs.find((d) => d.status === "ativo") ?? docs[0];
+        if (c) setM({ nome: c.nome_site || SITE_ADMIN.nome, logo: c.logo || SITE_ADMIN.logo, logoBranco: c.logo_rodape || c.logo || SITE_ADMIN.logoBranco });
+      });
+    } catch { /* banco não configurado */ }
+  }, []);
+  return m;
+}
+function Logo({ src, nome, className }: { src: string; nome: string; className?: string }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return src ? <img className={className} src={src} alt={nome} /> : <span className={`adm-nome-marca ${className ?? ""}`}>{nome}</span>;
+}
+
+type Ctx = { sessao: Sessao | null; avisar: (texto: string, erro?: boolean) => void; titulo: (t: string) => void };
+const AdminCtx = createContext<Ctx>({ sessao: null, avisar: () => {}, titulo: () => {} });
+export const useAdmin = () => useContext(AdminCtx);
+
+// Título da página no topo (cada tela chama uma vez).
+export function useTituloAdmin(t: string) {
+  const { titulo } = useAdmin();
+  useEffect(() => titulo(t), [t, titulo]);
+}
+
+// Claro/escuro do /admin: o mesmo atributo e a mesma chave do site (data-tema, tema-site)
+function BotaoTemaAdmin() {
+  const [escuro, setEscuro] = useState(false);
+  useEffect(() => setEscuro(document.documentElement.getAttribute("data-tema") === "escuro"), []);
+  const alternar = () => {
+    const t = escuro ? "claro" : "escuro";
+    document.documentElement.setAttribute("data-tema", t);
+    try { localStorage.setItem("tema-site", t); } catch { /* sem storage */ }
+    setEscuro(!escuro);
+  };
+  return (
+    <button type="button" className="adm-icone-btn" onClick={alternar} aria-label={escuro ? "Usar tema claro" : "Usar tema escuro"} title={escuro ? "Tema claro" : "Tema escuro"}>
+      {escuro ? <Sun size={17} /> : <Moon size={17} />}
+    </button>
+  );
+}
+
+function Login({ aoEntrar }: { aoEntrar: (s: Sessao) => void }) {
+  const marca = useMarca();
+  const [usuario, setUsuario] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
+  const [entrando, setEntrando] = useState(false);
+  const enviar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEntrando(true); setErro("");
+    try {
+      const r = await entrar(usuario, senha);
+      if (r.ok) aoEntrar(r.sessao); else setErro(r.erro);
+    } catch {
+      setErro("Não foi possível conectar ao banco. Tente de novo.");
+    } finally {
+      setEntrando(false);
+    }
+  };
+  return (
+    <div className={`adm-login ${plex.variable}`}>
+      <div className="card">
+        <Logo className="logo adm-logo-claro" src={marca.logo} nome={marca.nome} />
+        <Logo className="logo adm-logo-escuro" src={marca.logoBranco} nome={marca.nome} />
+        <h1>Área restrita</h1>
+        <p className="sub">Gerenciamento do conteúdo do site.</p>
+        <form onSubmit={enviar}>
+          <div className="campo"><label htmlFor="adm-usuario">E-mail ou login</label><input id="adm-usuario" autoComplete="username" value={usuario} onChange={(e) => setUsuario(e.target.value)} autoFocus /></div>
+          <div className="campo"><label htmlFor="adm-senha">Senha</label><input id="adm-senha" type="password" autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} /></div>
+          {erro && <div className="chat-erro" role="alert">{erro}</div>}
+          <button type="submit" className="btn btn-primary" disabled={entrando}>{entrando ? "Entrando..." : "Entrar"}</button>
+        </form>
+        <div className="rodape-login"><Link href="/">Voltar ao site</Link> · Tecnologia P2P Corp</div>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminShell({ children }: { children: React.ReactNode }) {
+  const rota = usePathname() || "/admin";
+  const [sessao, setSessao] = useState<Sessao | null | undefined>(undefined);
+  const [aberto, setAberto] = useState(false);
+  const [tituloAtual, setTitulo] = useState("Painel");
+  const [msg, setMsg] = useState<{ texto: string; erro: boolean } | null>(null);
+  const marca = useMarca();
+
+  useEffect(() => {
+    const s = lerSessao();
+    setSessao(s);
+    if (s) revalidarSessao(s).then(setSessao);
+  }, []);
+  useEffect(() => { if (!msg) return; const t = setTimeout(() => setMsg(null), 3500); return () => clearTimeout(t); }, [msg]);
+  useEffect(() => setAberto(false), [rota]);
+
+  const avisar = useCallback((texto: string, erro = false) => setMsg({ texto, erro }), []);
+  const titulo = useCallback((t: string) => { setTitulo(t); document.title = `${t} | Admin ${marca.nome}`; }, [marca.nome]);
+
+  if (sessao === undefined) return <div className={`adm-login ${plex.variable}`}><p className="texto-mut">Carregando...</p></div>;
+  if (!sessao) return <Login aoEntrar={setSessao} />;
+
+  const menu = SITE_ADMIN.menu.map((g) => ({ ...g, itens: g.itens.filter((i) => pode(sessao, i.permissao)) })).filter((g) => g.itens.length);
+  const ativo = (href: string) => (href === "/admin" ? rota === "/admin" : rota === href || rota.startsWith(href + "/"));
+  return (
+    <AdminCtx.Provider value={{ sessao, avisar, titulo }}>
+      <div className={`adm ${plex.variable}`}>
+        <div className={`adm-fundo${aberto ? " aberto" : ""}`} onClick={() => setAberto(false)} />
+        <aside className={`adm-lado${aberto ? " aberto" : ""}`} aria-label="Menu do admin">
+          <Link className="adm-marca" href="/admin">
+            <Logo src={marca.logoBranco} nome={marca.nome} />
+            <small>Área restrita</small>
+          </Link>
+          {menu.map((g) => (
+            <div key={g.grupo}>
+              <div className="adm-grupo">{g.grupo}</div>
+              {g.itens.map((i) => <Link key={i.href} href={i.href} className={ativo(i.href) ? "ativo" : undefined}>{i.icone} {i.rotulo}</Link>)}
+            </div>
+          ))}
+          <div className="adm-rodape-lado">
+            <Link href="/admin/senha" className={ativo("/admin/senha") ? "ativo" : undefined}><KeyRound size={18} /> Trocar senha</Link>
+            <a href="/" target="_blank" rel="noreferrer"><ExternalLink size={18} /> Ver o site</a>
+            <button type="button" className="adm-item" onClick={() => { sair(); setSessao(null); }}><LogOut size={18} /> Sair</button>
+          </div>
+        </aside>
+        <div className="adm-principal">
+          <header className="adm-topo">
+            <button type="button" className="adm-menu-btn" onClick={() => setAberto((v) => !v)} aria-label={aberto ? "Fechar menu" : "Abrir menu"}>
+              {aberto ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            <h1>{tituloAtual}</h1>
+            <BotaoTemaAdmin />
+            <div className="adm-usuario">
+              <span className="nome">Olá, <b>{sessao.nome}</b></span>
+              <span className="adm-avatar" aria-hidden>{(sessao.nome || "?").trim().charAt(0).toUpperCase()}</span>
+            </div>
+          </header>
+          <main className="adm-conteudo">{children}</main>
+        </div>
+      </div>
+      {msg && <div className={`adm-msg${msg.erro ? " erro" : ""}`} role="status">{msg.texto}</div>}
+    </AdminCtx.Provider>
+  );
+}
+
+// Tela que exige uma permissão (sem ela, explica em vez de mostrar).
+export function Protegido({ permissao, children }: { permissao: string; children: React.ReactNode }) {
+  const { sessao } = useAdmin();
+  if (!pode(sessao, permissao)) return <div className="card adm-vazio">Seu perfil não tem acesso a esta tela. Fale com o administrador.</div>;
+  return <>{children}</>;
+}

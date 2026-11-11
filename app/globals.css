@@ -570,6 +570,162 @@ html[data-tema="escuro"] .selo-saude.atrasada, html[data-tema="escuro"] .alergia
 html[data-tema="escuro"] .ok-box { background: rgba(7,169,88,.18); color: #4ade80; border-color: rgba(7,169,88,.35); }
 html[data-tema="escuro"] .lista-check li { color: #cfdaea; }
 
+/* >>> ADMIN DO SITE (monorepo) — gerado por scripts/copiar-admin-site.py */
+/* ══ /admin dos SITES — kit do monorepo (packages/layout/src/sites/admin/admin.css), aplicado por
+   scripts/copiar-admin-site.py entre os marcadores. Usa as variáveis do site padrão (--navy, --blue, --line...). ══ */
+.adm { display: grid; grid-template-columns: 252px 1fr; min-height: 100vh; background: var(--bg); }
+.adm-lado { background: var(--navy); color: #c5d4ea; padding: 18px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.adm-lado a.adm-marca { display: block; padding: 4px 8px 18px; }
+.adm-marca img { width: 190px; height: auto; }
+.adm-marca small { display: block; margin-top: 6px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #8fa9c9; font-weight: 800; }
+.adm-grupo { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: #7f98bb; font-weight: 850; margin: 14px 10px 4px; }
+.adm-lado a, .adm-lado button.adm-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; color: #c5d4ea; font-size: 14px; font-weight: 600; background: none; border: 0; cursor: pointer; text-align: left; width: 100%; }
+.adm-lado a:hover, .adm-lado button.adm-item:hover { background: rgba(255, 255, 255, .07); color: #fff; }
+.adm-lado a.ativo { background: var(--blue); color: #fff; }
+.adm-rodape-lado { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .1); }
+.adm-fundo { display: none; }
+.adm-principal { min-width: 0; display: flex; flex-direction: column; }
+.adm-topo { position: sticky; top: 0; z-index: 20; height: 66px; display: flex; align-items: center; gap: 14px; padding: 0 26px; background: rgba(255, 255, 255, .97); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.adm-topo h1 { font-size: 19px; margin: 0; color: var(--blue2); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-usuario { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--muted); }
+.adm-usuario b { color: var(--ink); }
+.adm-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 800; background: linear-gradient(135deg, var(--blue), var(--green)); }
+.adm-menu-btn { display: none; background: none; border: 0; cursor: pointer; color: var(--ink); }
+.adm-conteudo { padding: 26px; display: grid; gap: 18px; align-content: start; }
+.adm-barra { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.adm-barra .busca-faq { flex: 1; min-width: 220px; }
+.adm-barra .busca-faq input { margin: 0; }
+.adm-tabela-caixa { overflow-x: auto; }
+.adm-tabela { width: 100%; border-collapse: collapse; font-size: 14px; }
+.adm-tabela th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 12px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.adm-tabela td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.adm-tabela tr:last-child td { border-bottom: 0; }
+.adm-tabela tbody tr:hover td { background: color-mix(in srgb, var(--blue) 4%, transparent); }
+.adm-tabela .acoes { text-align: right; white-space: nowrap; }
+.adm-tabela img.mini { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; }
+.adm-icone-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: #fff; cursor: pointer; display: inline-grid; place-items: center; color: var(--blue2); margin-left: 6px; }
+.adm-icone-btn:hover { border-color: var(--blue); }
+.adm-icone-btn.perigo { color: var(--danger, #e3293c); }
+.adm-icone-btn.perigo:hover { border-color: var(--danger, #e3293c); }
+.selo { display: inline-block; font-size: 12px; font-weight: 750; border-radius: 7px; padding: 4px 10px; background: #e8fbf1; color: var(--green2, #07a958); white-space: nowrap; }
+.selo.off { background: #eef2f7; color: var(--muted); }
+.selo.alerta { background: #fdecee; color: #a11d2c; }
+.adm-vazio { padding: 40px 16px; text-align: center; color: var(--muted); }
+.adm-form { max-width: 980px; }
+.adm-form .grade-form { grid-template-columns: repeat(3, 1fr); }
+.adm-form .campo.dois { grid-column: span 2; }
+.adm-form .campo small { font-weight: 400; color: var(--muted); font-size: 12px; line-height: 1.4; }
+.adm-form .campo textarea { min-height: 110px; resize: vertical; }
+.adm-form .campo textarea.grande { min-height: 260px; font-family: ui-monospace, Consolas, monospace; font-size: 13.5px; }
+.adm-check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; font-weight: 600; color: #33445f; cursor: pointer; }
+.adm-check input { margin-top: 3px; width: 17px; height: 17px; accent-color: var(--blue); }
+.adm-check small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+.adm-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px 18px; }
+.adm-imagem { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.adm-imagem img { width: 96px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+.adm-imagem .btn { padding: 9px 14px; font-size: 13px; }
+.adm-cor { display: flex; gap: 8px; align-items: center; }
+.adm-cor input[type="color"] { width: 46px; height: 42px; padding: 3px; border-radius: 10px; flex: 0 0 auto; }
+.adm-cor input[type="text"] { flex: 1; min-width: 0; }
+.adm-md-abas { display: flex; gap: 6px; margin-bottom: 6px; }
+.adm-md-abas button { border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 5px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; color: var(--blue2); }
+.adm-md-abas button.ativa { background: var(--blue); border-color: var(--blue); color: #fff; }
+.adm-md-previa { border: 1px solid #d6e2ef; border-radius: 10px; padding: 12px 16px; min-height: 110px; background: #fff; font-weight: 400; }
+.adm-titulo-form { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.adm-titulo-form h2 { margin: 0; font-size: 21px; color: var(--blue2); }
+.adm-msg { position: fixed; right: 22px; bottom: 22px; z-index: 120; background: var(--navy); color: #fff; padding: 13px 18px; border-radius: 14px; box-shadow: var(--shadow); font-weight: 650; font-size: 14px; max-width: 360px; }
+.adm-msg.erro { background: #a11d2c; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.kpi { display: flex; gap: 14px; align-items: center; }
+.kpi strong { display: block; font-size: 26px; color: var(--blue2); line-height: 1.1; font-family: var(--fonte-titulo, inherit), sans-serif; }
+.kpi span:not(.icon-circ) { color: var(--muted); font-size: 13px; }
+.adm-duas { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.adm-duas > * { min-width: 0; }
+.adm-duas h3, .adm-conteudo .card > h3 { margin: 0 0 14px; font-size: 16px; }
+.barras { display: grid; gap: 10px; }
+.barra-linha { display: grid; grid-template-columns: 150px 1fr 48px; gap: 10px; align-items: center; font-size: 13.5px; }
+.barra-trilho { height: 10px; border-radius: 99px; background: var(--bg); overflow: hidden; }
+.barra-cheia { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--blue), var(--green)); }
+.barra-linha b { text-align: right; }
+.horas { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; align-items: end; height: 120px; }
+.horas div { background: linear-gradient(180deg, var(--blue), color-mix(in srgb, var(--blue) 55%, #fff)); border-radius: 4px 4px 0 0; min-height: 2px; }
+.horas-rotulos { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; font-size: 10px; color: var(--muted); text-align: center; margin-top: 4px; }
+.adm-log { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: var(--bg); border-radius: 12px; padding: 12px; max-height: 260px; overflow: auto; white-space: pre-wrap; margin-top: 14px; }
+.adm-login { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: linear-gradient(120deg, #e7f1ff, #eefcf5); }
+.adm-login .card { width: 100%; max-width: 420px; padding: 32px; }
+.adm-login img.logo { width: 220px; margin: 0 auto 8px; }
+.adm-login h1 { font-size: 22px; text-align: center; margin: 6px 0 4px; color: var(--blue2); }
+.adm-login p.sub { text-align: center; color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+.adm-login form { display: grid; gap: 14px; }
+.adm-login .btn { width: 100%; }
+.adm-login .rodape-login { text-align: center; margin-top: 18px; font-size: 13px; color: var(--muted); }
+.adm-login .rodape-login a { color: var(--blue); font-weight: 700; }
+
+@media (max-width: 1080px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .adm-duas { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .adm { grid-template-columns: 1fr; }
+  .adm-lado { position: fixed; z-index: 60; left: 0; top: 0; bottom: 0; width: 270px; transform: translateX(-100%); transition: transform .2s; }
+  .adm-lado.aberto { transform: none; box-shadow: var(--shadow); }
+  .adm-fundo.aberto { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(5, 27, 62, .45); }
+  .adm-menu-btn { display: block; }
+  .adm-topo { padding: 0 16px; }
+  .adm-usuario .nome { display: none; }
+  .adm-conteudo { padding: 16px; }
+  .adm-form .grade-form { grid-template-columns: 1fr; }
+  .adm-form .campo.dois { grid-column: auto; }
+}
+@media (max-width: 640px) {
+  .kpis { grid-template-columns: 1fr; }
+  .barra-linha { grid-template-columns: 100px 1fr 40px; }
+}
+
+html[data-tema="escuro"] .adm { background: #0b1220; }
+html[data-tema="escuro"] .adm-lado { background: #070d18; }
+html[data-tema="escuro"] .adm-topo { background: rgba(11, 18, 32, .96); }
+html[data-tema="escuro"] .adm-topo h1, html[data-tema="escuro"] .adm-titulo-form h2, html[data-tema="escuro"] .kpi strong { color: #ffffff; }
+html[data-tema="escuro"] .adm-icone-btn, html[data-tema="escuro"] .adm-md-abas button, html[data-tema="escuro"] .adm-md-previa { background: var(--sup2, #13243f); border-color: var(--line); color: #cfe0ff; }
+html[data-tema="escuro"] .adm-md-abas button.ativa { background: var(--blue); color: #fff; }
+html[data-tema="escuro"] .adm-check { color: #cfdaea; }
+html[data-tema="escuro"] .selo { background: rgba(7, 169, 88, .18); color: #4ade80; }
+html[data-tema="escuro"] .selo.off { background: var(--sup2, #13243f); color: var(--muted); }
+html[data-tema="escuro"] .selo.alerta { background: rgba(227, 41, 60, .18); color: #ff7a88; }
+html[data-tema="escuro"] .barra-trilho, html[data-tema="escuro"] .adm-log { background: var(--sup2, #13243f); }
+html[data-tema="escuro"] .adm-login { background: linear-gradient(120deg, #10213b, #0f2a24); }
+html[data-tema="escuro"] .adm-login h1 { color: #ffffff; }
+
+
+/* complemento do kit */
+.adm-login img.logo { display: block; }
+.adm-login .adm-logo-escuro, html[data-tema="escuro"] .adm-login .adm-logo-claro { display: none; }
+html[data-tema="escuro"] .adm-login .adm-logo-escuro { display: block; }
+.adm-kpi { text-decoration: none; color: inherit; }
+.adm-kpi:hover { border-color: var(--blue); }
+.adm-kpi-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, var(--blue), var(--green, #07a958)); flex: none; }
+.btn-perigo { background: var(--danger, #e3293c); color: #fff; border: 0; }
+.adm-form .campo.largo { grid-column: 1 / -1; }
+.adm-form .campo textarea { width: 100%; }
+html[data-tema="escuro"] .adm { background: transparent; }
+html[data-tema="escuro"] .adm-lado { background: rgba(4, 12, 34, .92); }
+html[data-tema="escuro"] .adm-topo { background: rgba(10, 32, 80, .92); }
+/* letras do tema escuro (as do site: --cor-texto-escuro) */
+html[data-tema="escuro"] .adm-conteudo, html[data-tema="escuro"] .adm-tabela td, html[data-tema="escuro"] .adm-usuario,
+html[data-tema="escuro"] .adm-usuario b, html[data-tema="escuro"] .adm-form .campo label, html[data-tema="escuro"] .adm-form legend,
+html[data-tema="escuro"] .kpi span:not(.adm-kpi-ic) { color: var(--cor-texto-escuro, #bcd8ff); }
+html[data-tema="escuro"] .adm-tabela th, html[data-tema="escuro"] .adm-tabela td.texto-mut { color: #7fa6dc; }
+html[data-tema="escuro"] .adm-topo h1, html[data-tema="escuro"] .adm-titulo-form h2, html[data-tema="escuro"] .kpi strong { color: color-mix(in srgb, var(--cor-texto-escuro, #bcd8ff) 60%, #ffffff); }
+html[data-tema="escuro"] .adm-form input, html[data-tema="escuro"] .adm-form select, html[data-tema="escuro"] .adm-form textarea,
+html[data-tema="escuro"] .adm-barra input { color: var(--cor-texto-escuro, #bcd8ff); }
+html[data-tema="escuro"] .adm-form input::placeholder, html[data-tema="escuro"] .adm-barra input::placeholder { color: #6f93c6; }
+html[data-tema="escuro"] .adm-form select option { background: #0c2452; color: var(--cor-texto-escuro, #bcd8ff); }
+.adm-nome-marca { display: inline-block; font-weight: 800; font-size: 22px; color: #fff; }
+.adm-login .adm-nome-marca { color: var(--blue2); display: block; text-align: center; margin: 0 auto 8px; }
+html[data-tema="escuro"] .adm-login .adm-nome-marca { color: #fff; }
+.adm-aviso { background: color-mix(in srgb, var(--blue) 10%, transparent); border: 1px solid color-mix(in srgb, var(--blue) 35%, transparent); border-radius: 14px; padding: 16px 18px; display: grid; gap: 10px; }
+/* <<< ADMIN DO SITE (monorepo) */
+
 /* >>> TEMA ESCURO AZUL (monorepo) — gerado por scripts/aplicar-tema-sites.py */
 /* ══ TEMA ESCURO AZUL dos SITES — o mesmo das aplicações web (dono, 10/11/2026) ══════════════════════════════════════
    FONTE ÚNICA no monorepo (packages/layout/src/sites/tema-escuro-azul.css). Os sites recebem este bloco no FIM do
@@ -608,4 +764,63 @@ html[data-tema="escuro"] .tag, html[data-tema="escuro"] .categoria, html[data-te
 html[data-tema="escuro"] .btn-outline { border-color: rgba(110, 165, 255, .4); color: var(--cor-texto-escuro, #bcd8ff); }
 html[data-tema="escuro"] hr { border-color: var(--line); }
 html[data-tema="escuro"] footer { background: #040f27; color: #9dbde8; }
+
+/* ══ /admin dos SITES = o MESMO visual das aplicações web (dono, 11/11/2026) ══════════════════════════════════════════
+   FONTE ÚNICA no monorepo (packages/layout/src/sites/admin-escuro-azul.css), entra no fim do app/globals.css de cada site
+   junto com o tema escuro azul por `python scripts/aplicar-tema-sites.py` — não edite a cópia no site.
+   Vale para o kit do /admin (packages/layout/src/sites/admin) e para o /admin próprio do Portal 181 (mesmas classes .adm-*).
+   Cores = bloco "TEMA ESCURO AZUL" do styles/globals.scss dos painéis (--ciop-*); fonte = IBM Plex Sans dos painéis
+   (carregada pelo AdminShell com next/font → --fonte-admin). Selos com 7px (regra dos botões). */
+.adm, .adm-login { font-family: var(--fonte-admin, "IBM Plex Sans"), "Segoe UI", Arial, sans-serif; }
+.adm h1, .adm h2, .adm h3, .adm .kpi strong, .adm-login h1 { font-family: var(--fonte-admin, "IBM Plex Sans"), "Segoe UI", Arial, sans-serif; font-weight: 600; letter-spacing: 0; }
+.adm .selo, .adm-login .selo { border-radius: 7px; }
+.adm-lado a, .adm-lado button.adm-item { font-weight: 500; border-radius: 7px; }
+
+html[data-tema="escuro"] .adm, html[data-tema="escuro"] .adm-login {
+  --adm-texto: #bcd8ff; --adm-mudo: #7fa6dc; --adm-borda: rgba(110, 165, 255, .24);
+  --adm-card: rgba(56, 120, 220, .08); --adm-hover: rgba(90, 150, 255, .12);
+  --adm-input: rgba(8, 28, 66, .75); --adm-input-texto: #cfe3ff; --adm-input-borda: rgba(110, 165, 255, .28);
+  --ink: var(--adm-texto); --muted: var(--adm-mudo); --line: var(--adm-borda); --sup: var(--adm-card); --sup2: rgba(8, 28, 66, .75);
+  color: var(--adm-texto);
+}
+html[data-tema="escuro"] .adm { background: transparent; }
+html[data-tema="escuro"] .adm-lado { background: rgba(6, 22, 54, .94); border-right: 1px solid var(--adm-borda); color: var(--adm-texto); }
+html[data-tema="escuro"] .adm-lado a, html[data-tema="escuro"] .adm-lado button.adm-item { color: var(--adm-texto); }
+html[data-tema="escuro"] .adm-lado a:hover, html[data-tema="escuro"] .adm-lado button.adm-item:hover { background: var(--adm-hover); color: #dbeaff; }
+html[data-tema="escuro"] .adm-lado a.ativo { background: var(--adm-hover); color: #dbeaff; box-shadow: inset 0 0 0 1px var(--adm-borda); }
+html[data-tema="escuro"] .adm-grupo, html[data-tema="escuro"] .adm-marca small { color: var(--adm-mudo); }
+html[data-tema="escuro"] .adm-rodape-lado { border-color: var(--adm-borda); }
+html[data-tema="escuro"] .adm-topo { background: rgba(8, 26, 62, .82); border-color: var(--adm-borda); }
+html[data-tema="escuro"] .adm-topo h1, html[data-tema="escuro"] .adm-titulo-form h2, html[data-tema="escuro"] .kpi strong,
+html[data-tema="escuro"] .adm h2, html[data-tema="escuro"] .adm h3, html[data-tema="escuro"] .adm-login h1 { color: #dbeaff; }
+html[data-tema="escuro"] .adm-usuario, html[data-tema="escuro"] .adm-usuario b, html[data-tema="escuro"] .adm-conteudo,
+html[data-tema="escuro"] .adm-tabela td, html[data-tema="escuro"] .adm-check, html[data-tema="escuro"] .adm .campo,
+html[data-tema="escuro"] .adm .campo label, html[data-tema="escuro"] .adm-form legend, html[data-tema="escuro"] .kpi span:not(.icon-circ):not(.adm-kpi-ic) { color: var(--adm-texto); }
+html[data-tema="escuro"] .adm .texto-mut, html[data-tema="escuro"] .adm-tabela th, html[data-tema="escuro"] .adm small,
+html[data-tema="escuro"] .horas-rotulos, html[data-tema="escuro"] .adm-vazio, html[data-tema="escuro"] .adm-login p.sub,
+html[data-tema="escuro"] .adm-login .rodape-login { color: var(--adm-mudo); }
+/* cartões translúcidos com borda azul (como os .card dos painéis) */
+html[data-tema="escuro"] .adm .card, html[data-tema="escuro"] .adm .panel, html[data-tema="escuro"] .adm-aviso,
+html[data-tema="escuro"] .adm-login .card { background: var(--adm-card); border: 1px solid var(--adm-borda); box-shadow: 0 24px 70px rgba(2, 8, 30, .35); color: var(--adm-texto); }
+html[data-tema="escuro"] .adm-tabela th, html[data-tema="escuro"] .adm-tabela td { border-color: var(--adm-borda); }
+html[data-tema="escuro"] .adm-tabela tbody tr:hover td { background: var(--adm-hover); }
+/* campos */
+html[data-tema="escuro"] .adm input, html[data-tema="escuro"] .adm select, html[data-tema="escuro"] .adm textarea,
+html[data-tema="escuro"] .adm-login input { background: var(--adm-input); border-color: var(--adm-input-borda); color: var(--adm-input-texto); }
+html[data-tema="escuro"] .adm input::placeholder, html[data-tema="escuro"] .adm textarea::placeholder, html[data-tema="escuro"] .adm-login input::placeholder { color: #6f93c6; }
+html[data-tema="escuro"] .adm select option { background: #0a2350; color: var(--adm-input-texto); }
+html[data-tema="escuro"] .adm input[type="checkbox"], html[data-tema="escuro"] .adm input[type="radio"], html[data-tema="escuro"] .adm input[type="color"] { background: transparent; }
+/* botões, abas e selos */
+html[data-tema="escuro"] .adm-icone-btn, html[data-tema="escuro"] .adm-md-abas button, html[data-tema="escuro"] .adm-md-previa,
+html[data-tema="escuro"] .adm .btn-outline { background: var(--adm-input); border-color: var(--adm-input-borda); color: var(--adm-texto); }
+html[data-tema="escuro"] .adm-md-abas button.ativa { background: #3b8cff; border-color: #3b8cff; color: #fff; }
+html[data-tema="escuro"] .adm .selo { background: rgba(34, 197, 94, .16); color: #6ee7a0; }
+html[data-tema="escuro"] .adm .selo.off { background: var(--adm-hover); color: var(--adm-mudo); }
+html[data-tema="escuro"] .adm .selo.alerta { background: rgba(227, 41, 60, .18); color: #ff8a96; }
+html[data-tema="escuro"] .barra-trilho, html[data-tema="escuro"] .adm-log { background: var(--adm-input); }
+html[data-tema="escuro"] .adm-msg { background: #0a2350; border: 1px solid var(--adm-borda); color: #dbeaff; }
+html[data-tema="escuro"] .adm-msg.erro { background: #5c1520; }
+/* login: o mesmo fundo em degradê das aplicações */
+html[data-tema="escuro"] .adm-login { background: transparent; }
+html[data-tema="escuro"] .adm-fundo.aberto { background: rgba(2, 8, 30, .6); }
 /* <<< TEMA ESCURO AZUL (monorepo) */
