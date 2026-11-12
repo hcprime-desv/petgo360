@@ -66,6 +66,8 @@ export type SiteAdmin = {
   perfis: Record<string, string[] | "*">;
   menu: { grupo: string; itens: ItemMenu[] }[];
   cadastros: Cadastro[];
+  /** tela de LOGIN (modelo das aplicações web): frase (*destaque*, "\n" quebra) e até 4 destaques (ícone = emoji) */
+  login?: { frase?: string; destaques?: { icone: string; cor: string; titulo: string; texto: string }[] };
   /** logo e nome lidos AO VIVO da Configuração do site (configuracoes_site: logo, logo_rodape, nome_site) — sites gerados */
   marcaAoVivo?: boolean;
   /** quadro extra no topo do Painel (ex.: "Carregar o conteúdo modelo" nos sites gerados pelo Builder360) */

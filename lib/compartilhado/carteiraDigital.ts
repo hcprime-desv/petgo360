@@ -547,7 +547,7 @@ ${p.completo ? `<h2>Alimentação</h2>${ali.length ? `<table><tr><th>Ração/ali
 export function temBackup(cliente: Record<string, any> | null | undefined, agora = Date.now()): boolean {
   return assinante(cliente, agora);
 }
-export const COLECOES_DO_APARELHO = ["pets", "vacinacoes", "registros_saude", "alimentacoes_pets"] as const;
+export const COLECOES_DO_APARELHO = ["pets", "vacinacoes", "registros_saude", "alimentacoes_pets", "remedios_pets", "doses_remedios", "agenda_pets", "pesos_pets"] as const;
 
 // Cópia temporária da carteira que vai junto com o QR (o veterinário lê pela
 // web mesmo quando os dados só existem no celular). Só o necessário; o app

@@ -4,6 +4,7 @@
 // /admin dos SITES — moldura: login (sem sessão), menu lateral com o que o usuário pode abrir, topo com o título, o
 // botão claro/escuro e o usuário, e o aviso flutuante. Marca, menu e cadastros vêm de lib/admin/site.tsx (SITE_ADMIN).
 import Link from "next/link";
+import VerificacaoSeguranca from "@/components/admin/Verificacao";
 import { IBM_Plex_Sans } from "next/font/google";
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
@@ -63,39 +64,83 @@ function BotaoTemaAdmin() {
   );
 }
 
+// LOGIN do /admin no MESMO modelo das aplicações web (dono, 12/11/2026 — @hc/layout TelaLogin): tema escuro azul, marca,
+// frase e destaques à esquerda (SITE_ADMIN.login), data e hora, e o cartão de acesso de vidro à direita.
+const DESTAQUES_SITE = [
+  { icone: "📝", cor: "#3B82F6", titulo: "Páginas e conteúdo", texto: "Edite o site sem programar" },
+  { icone: "📣", cor: "#FACC15", titulo: "Avisos e notícias", texto: "Publicação na hora" },
+  { icone: "💬", cor: "#22C55E", titulo: "Chat e interessados", texto: "Contatos do site num só lugar" },
+  { icone: "👥", cor: "#A855F7", titulo: "Usuários e grupos", texto: "Cada um vê só o que pode" },
+];
+function FraseLogin({ texto }: { texto: string }) {
+  return <>{texto.split("\n").map((l, i) => <span key={i}>{i ? <br /> : null}{l.split(/(\*[^*]+\*)/g).map((p, j) => (p.startsWith("*") && p.endsWith("*") ? <em key={j}>{p.slice(1, -1)}</em> : <span key={j}>{p}</span>))}</span>)}</>;
+}
+function RelogioLogin() {
+  const [agora, setAgora] = useState<Date | null>(null);
+  useEffect(() => { setAgora(new Date()); const t = setInterval(() => setAgora(new Date()), 1000); return () => clearInterval(t); }, []);
+  if (!agora) return <div className="hcl-relogio" />;
+  const dia = agora.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
+  return <div className="hcl-relogio"><small>{dia.charAt(0).toUpperCase() + dia.slice(1)}</small><b>{agora.toLocaleTimeString("pt-BR")}</b></div>;
+}
+
 function Login({ aoEntrar }: { aoEntrar: (s: Sessao) => void }) {
   const marca = useMarca();
   const [usuario, setUsuario] = useState("");
   const [senha, setSenha] = useState("");
+  const [ver, setVer] = useState(false);
   const [erro, setErro] = useState("");
   const [entrando, setEntrando] = useState(false);
+  // verificação de segurança invisível (a mesma dos painéis): só entra depois de concluída
+  const [verificado, setVerificado] = useState(false);
+  const [tentativa, setTentativa] = useState(0);
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!verificado) { setErro("Aguarde a verificação de segurança (ou deslize para confirmar)."); return; }
     setEntrando(true); setErro("");
     try {
       const r = await entrar(usuario, senha);
-      if (r.ok) aoEntrar(r.sessao); else setErro(r.erro);
+      if (r.ok) aoEntrar(r.sessao); else { setErro(r.erro); setTentativa((t) => t + 1); }
     } catch {
       setErro("Não foi possível conectar ao banco. Tente de novo.");
     } finally {
       setEntrando(false);
     }
   };
+  const frase = SITE_ADMIN.login?.frase || `Gerencie o *conteúdo*\ndo seu *site*.`;
+  const destaques = (SITE_ADMIN.login?.destaques?.length ? SITE_ADMIN.login.destaques : DESTAQUES_SITE).slice(0, 4);
   return (
-    <div className={`adm-login ${plex.variable}`}>
-      <div className="card">
-        <Logo className="logo adm-logo-claro" src={marca.logo} nome={marca.nome} />
-        <Logo className="logo adm-logo-escuro" src={marca.logoBranco} nome={marca.nome} />
-        <h1>Área restrita</h1>
-        <p className="sub">Gerenciamento do conteúdo do site.</p>
-        <form onSubmit={enviar}>
-          <div className="campo"><label htmlFor="adm-usuario">E-mail ou login</label><input id="adm-usuario" autoComplete="username" value={usuario} onChange={(e) => setUsuario(e.target.value)} autoFocus /></div>
-          <div className="campo"><label htmlFor="adm-senha">Senha</label><input id="adm-senha" type="password" autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} /></div>
-          {erro && <div className="chat-erro" role="alert">{erro}</div>}
-          <button type="submit" className="btn btn-primary" disabled={entrando}>{entrando ? "Entrando..." : "Entrar"}</button>
-        </form>
-        <div className="rodape-login"><Link href="/">Voltar ao site</Link> · Tecnologia P2P Corp</div>
-      </div>
+    <div className={`hcl-tela ${plex.variable}`}>
+      <section className="hcl-esq">
+        <div className="hcl-marca">{marca.logoBranco || marca.logo ? <Logo src={marca.logoBranco || marca.logo} nome={marca.nome} /> : <b className="hcl-nome">{marca.nome}</b>}</div>
+        <div className="hcl-meio">
+          <h1><FraseLogin texto={frase} /></h1>
+          <div className="hcl-destaques">
+            {destaques.map((d) => <div className="hcl-dest" key={d.titulo}><i style={{ background: d.cor }}>{d.icone}</i><div><b>{d.titulo}</b><span>{d.texto}</span></div></div>)}
+          </div>
+        </div>
+        <RelogioLogin />
+      </section>
+      <section className="hcl-dir">
+        <div className="hcl-cartoes">
+          <form className="hcl-card" onSubmit={enviar}>
+            <h2 className="hcl-titulo">Acesso ao sistema</h2>
+            <p className="hcl-sub">Gerenciamento do conteúdo de {marca.nome}.</p>
+            <label htmlFor="adm-usuario">E-mail ou login</label>
+            <input id="adm-usuario" autoComplete="username" value={usuario} onChange={(e) => setUsuario(e.target.value)} autoFocus placeholder="seu.usuario ou e-mail" />
+            <label htmlFor="adm-senha">Senha</label>
+            <div className="hcl-senha">
+              <input id="adm-senha" type={ver ? "text" : "password"} autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="sua senha" />
+              <button type="button" onClick={() => setVer(!ver)} aria-label={ver ? "Esconder a senha" : "Mostrar a senha"}>{ver ? "🙈" : "👁️"}</button>
+            </div>
+            <label>Verificação de segurança</label>
+            <VerificacaoSeguranca verified={verificado} onVerifiedChange={setVerificado} resetTrigger={tentativa} />
+            {erro && <div className="hcl-erro" role="alert">{erro}</div>}
+            <button type="submit" className="hcl-entrar" disabled={entrando}>{entrando ? "Entrando..." : "Entrar"}</button>
+            <div className="hcl-voltar"><Link href="/">← Voltar ao site</Link></div>
+          </form>
+          <div className="hcl-rodape"><div className="hcl-assina"><span>Tecnologia e Inovação · P2P Corp</span></div></div>
+        </div>
+      </section>
     </div>
   );
 }
