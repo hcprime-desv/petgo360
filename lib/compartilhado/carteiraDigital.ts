@@ -61,8 +61,8 @@ export const GRATIS = { maxPets: 1, descricao: "1 pet e as vacinas (com QR Code 
 // assinatura = o plano base (Backup na nuvem, pela loja); recurso/servico = COMBOS da vitrine (só para assinantes)
 export const TIPOS_MODULO = ["assinatura", "recurso", "servico"] as const;
 export const RECURSO_ASSINATURA: RecursoApp = "backup_nuvem";
-export const CATEGORIAS_SERVICO = ["plano_saude", "plano_funeral", "seguro", "outro"] as const;
-export const ROTULOS_CATEGORIA_SERVICO: Record<string, string> = { plano_saude: "Plano de saúde pet", plano_funeral: "Plano funeral pet", seguro: "Seguro pet", outro: "Outro serviço" };
+export const CATEGORIAS_SERVICO = ["plano_saude", "plano_funeral", "seguro", "telemedicina", "outro"] as const;
+export const ROTULOS_CATEGORIA_SERVICO: Record<string, string> = { plano_saude: "Plano de saúde pet", plano_funeral: "Plano funeral pet", seguro: "Seguro pet", telemedicina: "Telemedicina veterinária 24h", outro: "Outro serviço" };
 export const PERIODOS = ["mensal", "anual"] as const;
 export type Periodo = (typeof PERIODOS)[number];
 export const diasDoPeriodo = (p: Periodo) => (p === "anual" ? 365 : 30);
@@ -85,7 +85,11 @@ export const CATALOGO_PADRAO: Record<string, any>[] = [
     descricao: "Remoção, cremação e cerimônia, com assistência 24h acionada pelo app." },
   { codigo: "seguro_pet", nome: "Seguro pet", tipo: "servico", categoria: "seguro", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 12, parceiro: "", icone: "shield-plus-outline",
     descricao: "Cobertura de acidentes, assistência e urgência. Preço conforme o pet." },
+  { codigo: "telemedicina", nome: "Veterinário 24h (telemedicina)", tipo: "servico", categoria: "telemedicina", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 13, parceiro: "", icone: "stethoscope",
+    descricao: "Tire dúvidas com um veterinário por chat ou vídeo, a qualquer hora." },
 ];
+// Serviços de parceiros: cada um é vendido por PACOTE (o PetGo revende e recebe) ou por COMISSÃO (o tutor paga direto à
+// operadora) — regras em ./operadoras.ts (campos modelo_venda, id_operadoras, link_contratacao, marca_propria no módulo).
 
 // Configuração (painel → Configurações, grupo "assinatura").
 // PAGAMENTO no padrão do ViaMob360: `modo_gateway` "desenvolvimento" (PADRÃO
@@ -440,6 +444,7 @@ export function planejarContratacao(p: { cliente: Record<string, any>; modulo: R
   const m = p.modulo;
   if (!m || m.status === "inativo") throw new Error("Módulo indisponível.");
   if (m.tipo !== "assinatura" && !assinante(p.cliente, agora)) throw new Error("Os combos são para assinantes. Assine o Backup na nuvem (7 dias grátis) e depois some os combos que quiser.");
+  if (m.tipo === "servico" && m.modelo_venda === "comissao") throw new Error("Este serviço é contratado direto com o parceiro: toque em \"Contratar com o parceiro\".");
   if (!(PERIODOS as readonly string[]).includes(p.periodo)) throw new Error("Escolha mensal ou anual.");
   const consulta = sobConsulta(m);
   const valor = consulta ? 0 : precoDoModulo(m, p.periodo);
