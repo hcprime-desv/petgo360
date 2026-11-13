@@ -15,6 +15,7 @@ const LINKS = [
   { href: "/#modulos", rotulo: "Módulos e serviços" },
   { href: "/#veterinarios", rotulo: "Para veterinários" },
   { href: "/perdidos", rotulo: "Pets perdidos" },
+  { href: "/denuncia", rotulo: "Denunciar maus-tratos" },
   { href: "/#contato", rotulo: "Contato" },
 ];
 
@@ -73,6 +74,7 @@ export function Footer({ config }: { config: ConfigSite }) {
             <h4>Profissionais</h4>
             <Link href="/#veterinarios">Veterinários e pet shops</Link>
             <Link href="/perdidos">Pets perdidos e encontrados</Link>
+            <Link href="/denuncia">Disque Denúncia Pet (maus-tratos)</Link>
             <Link href="/#contato">Contato</Link>
             {c.email && <a href={`mailto:${c.email}`}>{c.email}</a>}
             {c.whatsapp && <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g, "").replace(/^55/, "")}`} target="_blank" rel="noreferrer">WhatsApp {c.whatsapp}</a>}

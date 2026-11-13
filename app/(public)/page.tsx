@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Clock, Download, FileText, QrCode, ShieldCheck, Smartphone, Stethoscope, Syringe, CheckCircle2, Lock } from "lucide-react";
+import { ChevronRight, Clock, Download, FileText, QrCode, ShieldAlert, ShieldCheck, Smartphone, Stethoscope, Syringe, CheckCircle2, Lock } from "lucide-react";
 import Modulos from "@/components/Modulos";
 import Contato from "@/components/site/Contato";
 import Perguntas from "@/components/site/Perguntas";
@@ -86,6 +86,20 @@ export default async function HomePage() {
                 <div className="check"><span className="dot"><ShieldCheck size={14} /></span>Alergia: dipirona</div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section" id="denuncia">
+        <div className="container">
+          <div className="dp-chamada">
+            <span className="dp-icone"><ShieldAlert size={30} /></span>
+            <div style={{ flex: 1 }}>
+              <span className="eyebrow">Utilidade pública · anônimo</span>
+              <h2 style={{ margin: "4px 0 6px" }}>Disque Denúncia Pet</h2>
+              <p style={{ margin: 0 }}>Viu maus-tratos a um animal? Denuncie pelo site, pelo app ou pelo WhatsApp. Não registramos quem denuncia — a central encaminha ao órgão competente do seu município.</p>
+            </div>
+            <Link className="btn btn-primary" href="/denuncia">Denunciar <ChevronRight size={18} /></Link>
           </div>
         </div>
       </section>

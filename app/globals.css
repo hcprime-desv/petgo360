@@ -936,3 +936,14 @@ html[data-tema="escuro"] .adm-msg.erro { background: #5c1520; }
 html[data-tema="escuro"] .adm-login { background: transparent; }
 html[data-tema="escuro"] .adm-fundo.aberto { background: rgba(2, 8, 30, .6); }
 /* <<< TEMA ESCURO AZUL (monorepo) */
+
+/* Disque Denúncia Pet */
+.dp-grade{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:28px;align-items:start}
+.dp-lado{border:1px solid var(--line,#e5e7eb);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.dp-lado h3{display:flex;align-items:center;gap:8px;margin:0;font-size:18px}
+.dp-lado ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.dp-acompanhar{border-top:1px solid var(--line,#e5e7eb);padding-top:14px;margin-top:6px}
+.dp-acompanhar input{padding:10px 12px;border-radius:10px;border:1px solid var(--line,#d1d5db);background:transparent;color:inherit}
+.dp-chamada{display:flex;align-items:center;gap:20px;padding:24px;border-radius:18px;border:2px solid #b91c1c;background:rgba(185,28,28,.06);flex-wrap:wrap}
+.dp-icone{width:58px;height:58px;border-radius:16px;background:#b91c1c;color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+@media (max-width:860px){.dp-grade{grid-template-columns:1fr}}
