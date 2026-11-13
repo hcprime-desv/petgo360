@@ -1,0 +1,38 @@
+{
+ "site": "petgo",
+ "capturado_em": "2026-11-13T01:19:15.279Z",
+ "telas": [
+  {
+   "rota": "/",
+   "titulo": "O passaporte de saúdedo seu pet.",
+   "descricao": "",
+   "h1": "O passaporte de saúdedo seu pet.",
+   "lead": "Nunca mais perca a carteirinha de papel. Vacinas, saúde e alimentação no celular, para mostrar em qualquer clínica ou pet shop pelo QR Code.",
+   "imagem": "imagens/manual-01-inicio.png"
+  },
+  {
+   "rota": "/denuncia",
+   "titulo": "Disque Denúncia Pet — denuncie maus-tratos a animais",
+   "descricao": "Serviço de utilidade pública do PetGo360: denúncia ANÔNIMA de maus-tratos a animais, encaminhada ao órgão competente do seu município.",
+   "h1": "Disque Denúncia Pet",
+   "lead": "Viu um animal sendo maltratado, abandonado, sem comida ou acorrentado? Denuncie. Não registramos quem denuncia: a nossa central encaminha a denúncia ao órgão competente do seu município — também pelo WhatsApp e pelo app.",
+   "imagem": "imagens/manual-02-denuncia.png"
+  },
+  {
+   "rota": "/perdidos",
+   "titulo": "Pets perdidos e encontrados",
+   "descricao": "Serviço gratuito do PetGo360: registre um pet perdido ou encontrado com foto. O reconhecimento pela foto avisa o tutor e quem encontrou.",
+   "h1": "Pets perdidos e encontrados",
+   "lead": "Viu um destes pets? Avise o tutor. Perdeu ou encontrou um pet? Registre com foto: o reconhecimento compara com os pets procurados e avisa as duas pessoas na hora — também pelo WhatsApp.",
+   "imagem": "imagens/manual-03-perdidos.png"
+  },
+  {
+   "rota": "/admin",
+   "titulo": "Gerencie o conteúdodo seu site.",
+   "descricao": "",
+   "h1": "Gerencie o conteúdodo seu site.",
+   "lead": "",
+   "imagem": "imagens/manual-04-admin.png"
+  }
+ ]
+}

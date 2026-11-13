@@ -23,11 +23,14 @@ export const TIPOS_MAUS_TRATOS = [
   { valor: "outro", rotulo: "Outro tipo de maus-tratos", emoji: "📝" },
 ] as const;
 export const rotuloTipoDenuncia = (v: any) => TIPOS_MAUS_TRATOS.find((t) => t.valor === v)?.rotulo ?? "Maus-tratos";
+// até 10 (lista do WhatsApp); "outro" pede o nome do animal (`especie_outra`)
 export const ESPECIES_DENUNCIA = [
-  { valor: "cao", rotulo: "Cão" }, { valor: "gato", rotulo: "Gato" }, { valor: "cavalo", rotulo: "Cavalo / jumento" },
-  { valor: "ave", rotulo: "Ave" }, { valor: "silvestre", rotulo: "Animal silvestre" }, { valor: "outro", rotulo: "Outro" },
+  { valor: "cao", rotulo: "Cão" }, { valor: "gato", rotulo: "Gato" }, { valor: "cavalo", rotulo: "Cavalo / jumento / burro" },
+  { valor: "boi", rotulo: "Boi / vaca" }, { valor: "porco", rotulo: "Porco" }, { valor: "cabra", rotulo: "Cabra / ovelha" },
+  { valor: "galinha", rotulo: "Galinha / aves criação" }, { valor: "ave", rotulo: "Pássaro / ave" }, { valor: "silvestre", rotulo: "Animal silvestre" },
+  { valor: "outro", rotulo: "Outro (escrever qual)" },
 ] as const;
-export const rotuloEspecieDenuncia = (v: any) => ESPECIES_DENUNCIA.find((t) => t.valor === v)?.rotulo ?? "Animal";
+export const rotuloEspecieDenuncia = (v: any, outra?: any) => (v === "outro" && String(outra ?? "").trim() ? String(outra).trim() : ESPECIES_DENUNCIA.find((t) => t.valor === v)?.rotulo.replace(" (escrever qual)", "") ?? "Animal");
 export const LOCAIS_DENUNCIA = [{ valor: "privado", rotulo: "Casa / local privado" }, { valor: "publico", rotulo: "Rua / local público" }, { valor: "comercio", rotulo: "Comércio / canil / criadouro" }] as const;
 export const FREQUENCIAS_DENUNCIA = [{ valor: "agora", rotulo: "Está acontecendo agora" }, { valor: "frequente", rotulo: "Acontece com frequência" }, { valor: "uma_vez", rotulo: "Aconteceu uma vez" }] as const;
 
@@ -69,7 +72,7 @@ export const lerProtocolo = (t: any) => { const m = String(t ?? "").toUpperCase(
 
 const txt = (v: any, max: number) => String(v ?? "").trim().slice(0, max);
 export type DadosDenuncia = {
-  tipo: string; especie?: string; quantidade?: string; uf: string; municipio: string; bairro?: string; endereco: string; referencia?: string;
+  tipo: string; especie?: string; especie_outra?: string; quantidade?: string; uf: string; municipio: string; bairro?: string; endereco: string; referencia?: string;
   latitude?: number | null; longitude?: number | null; local?: string; frequencia?: string; responsavel?: string; descricao: string;
   fotos?: string[]; canal: "app" | "whatsapp" | "site" | "painel"; bytes: Uint8Array; agora?: number;
 };
@@ -86,7 +89,7 @@ export function planejarDenunciaPet(d: DadosDenuncia) {
   const descricao = txt(d.descricao, 3000);
   if (descricao.length < 10) throw new Error("Conte em poucas palavras o que está acontecendo com o animal.");
   return {
-    protocolo: gerarProtocoloDenuncia(d.bytes, agora), tipo: d.tipo, especie: txt(d.especie, 20) || "outro", quantidade: txt(d.quantidade, 20),
+    protocolo: gerarProtocoloDenuncia(d.bytes, agora), tipo: d.tipo, especie: txt(d.especie, 20) || "outro", especie_outra: d.especie === "outro" ? txt(d.especie_outra, 60) : "", quantidade: txt(d.quantidade, 20),
     uf, municipio, municipio_chave: chaveMunicipio(municipio), bairro: txt(d.bairro, 80), endereco, referencia: txt(d.referencia, 200),
     latitude: Number.isFinite(d.latitude as number) ? d.latitude : null, longitude: Number.isFinite(d.longitude as number) ? d.longitude : null,
     local: txt(d.local, 20), frequencia: txt(d.frequencia, 20), responsavel: txt(d.responsavel, 300), descricao,
@@ -110,7 +113,7 @@ export function linhasDocumento(d: any): [string, string][] {
   const r = (lista: readonly { valor: string; rotulo: string }[], v: any) => lista.find((x) => x.valor === v)?.rotulo ?? "—";
   return [
     ["Protocolo", d.protocolo], ["Recebida em", data(d.recebida_em)], ["Tipo", rotuloTipoDenuncia(d.tipo)],
-    ["Animal", `${rotuloEspecieDenuncia(d.especie)}${d.quantidade ? ` (${d.quantidade})` : ""}`],
+    ["Animal", `${rotuloEspecieDenuncia(d.especie, d.especie_outra)}${d.quantidade ? ` (${d.quantidade})` : ""}`],
     ["Estado / município", `${nomeUf(d.uf)} (${d.uf}) — ${d.municipio}`], ["Bairro", d.bairro || "—"], ["Endereço", d.endereco || "—"],
     ["Ponto de referência", d.referencia || "—"], ["Localização", Number.isFinite(d.latitude) ? `${Number(d.latitude).toFixed(6)}, ${Number(d.longitude).toFixed(6)} (https://maps.google.com/?q=${d.latitude},${d.longitude})` : "—"],
     ["Local", r(LOCAIS_DENUNCIA, d.local)], ["Frequência", r(FREQUENCIAS_DENUNCIA, d.frequencia)], ["Responsável (se conhecido)", d.responsavel || "—"],

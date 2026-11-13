@@ -37,6 +37,20 @@ module.exports = {
       ],
     },
     {
+      titulo: "Disque Denúncia Pet",
+      intro: "Página /denuncia: denúncia ANÔNIMA de maus-tratos a animais — serviço de utilidade pública. Também há uma chamada na página inicial e o link no menu.",
+      blocos: [
+        { passos: ["Escolha o tipo de maus-tratos e o animal.", "Informe o **estado** e o **município** (obrigatórios — é por eles que a central sabe a qual órgão encaminhar), o endereço e um ponto de referência; se quiser, use a localização do navegador.", "Conte o que viu e, se tiver, envie até 4 fotos.", "Toque em `Enviar denúncia`: aparece o **protocolo**. Em “Acompanhar”, digite o protocolo para ver o andamento."] },
+        { img: ["imagens/manual-02-denuncia.png", "Disque Denúncia Pet no site"], larga: true },
+        { dica: "Não pedimos nem guardamos nome, e-mail ou telefone de quem denuncia — contra trotes, só um código cifrado e irreversível do navegador, que não identifica a pessoa. Se a plataforma liberar o serviço só para assinantes, a página mostra o aviso e indica o app." },
+      ],
+    },
+    {
+      titulo: "Link de indicação dos parceiros",
+      intro: "Página /i/CÓDIGO: o link que pet shops, clínicas e influenciadores divulgam. Mostra o código para usar no cadastro do app (o tutor ganha dias extras no teste grátis) e os botões das lojas.",
+      blocos: [{ p: "O código é conferido no cadastro do app; a página não mostra nenhum dado do parceiro (comissão e Pix ficam só no painel)." }],
+    },
+    {
       titulo: "O /admin do site",
       intro: "A equipe publica o conteúdo do site sem depender de TI: páginas, perguntas frequentes, avisos, interessados (contatos), usuários e a configuração do site. O mesmo conteúdo pode ser gerenciado pelo AdmSite360.",
       blocos: [

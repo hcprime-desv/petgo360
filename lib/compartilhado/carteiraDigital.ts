@@ -136,7 +136,8 @@ export const podeTesteGratis = (cliente: Record<string, any> | null | undefined)
 export function planejarTesteGratis(cliente: Record<string, any>, modulo: Record<string, any>, agora = Date.now()) {
   if (!podeTesteGratis(cliente)) throw new Error("O teste grátis já foi usado nesta conta.");
   if (modulo?.tipo !== "assinatura") throw new Error("O teste grátis é da assinatura.");
-  const dias = Number(modulo.dias_gratis) || ASSINATURA_PADRAO.dias_gratis;
+  // + bônus de quem veio por um PARCEIRO de indicação (clientes.bonus_teste_dias — ./indicacoes.ts)
+  const dias = (Number(modulo.dias_gratis) || ASSINATURA_PADRAO.dias_gratis) + Math.max(0, Number(cliente.bonus_teste_dias) || 0);
   const fim = agora + dias * DIA;
   const recursos = { ...(cliente.recursos_ate ?? {}) } as Record<string, number>;
   for (const r of modulo.recursos ?? [RECURSO_ASSINATURA]) recursos[r] = Math.max(ms(recursos[r]) ?? 0, fim);
