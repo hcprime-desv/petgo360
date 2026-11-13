@@ -653,6 +653,20 @@ html[data-tema="escuro"] .pp-acao.info, html[data-tema="escuro"] .pp-abas, html[
 /* >>> ADMIN DO SITE (monorepo) — gerado por scripts/copiar-admin-site.py */
 /* ══ /admin dos SITES — kit do monorepo (packages/layout/src/sites/admin/admin.css), aplicado por
    scripts/copiar-admin-site.py entre os marcadores. Usa as variáveis do site padrão (--navy, --blue, --line...). ══ */
+/* BASE do formulário e dos botões (13/11/2026): o /admin não depende do CSS do site (o PetVet usa Tailwind e não tinha
+   .grade-form, .campo, .btn...). Especificidade ZERO (:where): o CSS próprio do site, quando existe, continua valendo. */
+:where(.adm) .grade-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+:where(.adm) .campo { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 650; }
+:where(.adm) .campo input, :where(.adm) .campo select, :where(.adm) .campo textarea { border: 1px solid #d6e2ef; border-radius: 10px; padding: 11px 12px; font-weight: 400; font: inherit; }
+:where(.adm) .campo em { color: #c0392b; font-style: normal; font-size: 12px; font-weight: 500; }
+:where(.adm) .acoes-form { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+:where(.adm) .btn { border: 0; border-radius: 12px; padding: 11px 16px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: .2s; }
+:where(.adm) .btn:disabled { opacity: .6; cursor: wait; }
+:where(.adm) .btn-primary { background: linear-gradient(135deg, #1F5FBF, #0a7ae8); color: #fff; }
+:where(.adm) .btn-outline { background: transparent; border: 1px solid #b8cae1; color: inherit; }
+:where(.adm) .chat-erro { background: #fdecee; color: #a11d2c; border: 1px solid #f5c2c8; border-radius: 10px; padding: 9px 11px; font-size: 13px; margin: 6px 0; }
+@media (max-width: 760px) { :where(.adm) .grade-form { grid-template-columns: 1fr; } }
+
 .adm { display: grid; grid-template-columns: 252px 1fr; min-height: 100vh; background: var(--bg); }
 .adm-lado { background: var(--navy); color: #c5d4ea; padding: 18px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .adm-lado a.adm-marca { display: block; padding: 4px 8px 18px; }
