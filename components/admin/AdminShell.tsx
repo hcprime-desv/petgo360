@@ -106,12 +106,21 @@ function Login({ aoEntrar }: { aoEntrar: (s: Sessao) => void }) {
       setEntrando(false);
     }
   };
+  // Dia/noite do login (dono, 13/11/2026 — o MESMO botão e a mesma chave da tela de login das aplicações web): padrão NOITE,
+  // a escolha fica só no navegador.
+  const [noite, setNoite] = useState(true);
+  useEffect(() => { try { if (localStorage.getItem("hcl-tema-login") === "dia") setNoite(false); } catch { /* sem storage */ } }, []);
+  const trocarTema = () => setNoite((n) => { try { localStorage.setItem("hcl-tema-login", n ? "dia" : "noite"); } catch { /* ok */ } return !n; });
+  const logoLogin = noite ? marca.logoBranco || marca.logo : marca.logo || marca.logoBranco;
   const frase = SITE_ADMIN.login?.frase || `Gerencie o *conteúdo*\ndo seu *site*.`;
   const destaques = (SITE_ADMIN.login?.destaques?.length ? SITE_ADMIN.login.destaques : DESTAQUES_SITE).slice(0, 4);
   return (
-    <div className={`hcl-tela ${plex.variable}`}>
+    <div className={`hcl-tela ${plex.variable} ${noite ? "" : "hcl-dia"}`}>
+      <button type="button" className="hcl-tema" onClick={trocarTema} aria-label={noite ? "Modo dia" : "Modo noite"} title={noite ? "Modo dia" : "Modo noite"}>
+        {noite ? "☀️" : "🌙"}<span>{noite ? "Dia" : "Noite"}</span>
+      </button>
       <section className="hcl-esq">
-        <div className="hcl-marca">{marca.logoBranco || marca.logo ? <Logo src={marca.logoBranco || marca.logo} nome={marca.nome} /> : <b className="hcl-nome">{marca.nome}</b>}</div>
+        <div className="hcl-marca">{logoLogin ? <Logo src={logoLogin} nome={marca.nome} /> : <b className="hcl-nome">{marca.nome}</b>}</div>
         <div className="hcl-meio">
           <h1><FraseLogin texto={frase} /></h1>
           <div className="hcl-destaques">
