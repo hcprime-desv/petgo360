@@ -45,7 +45,7 @@ const txt = (v: any, max = 500) => String(v ?? "").trim().slice(0, max);
 //   contratação aprovada no painel e botão "Acionar" na carteira do pet.
 // Um módulo pode liberar vários recursos (ex.: pacote "Completo").
 // No tutor (clientes): recursos_ate { recurso: ms } e servicos_ate { codigo: ms }.
-export const RECURSOS_APP = ["backup_nuvem", "pets_ilimitados", "historico_saude", "anexos", "alimentacao", "pdf_completo", "alertas_whatsapp"] as const;
+export const RECURSOS_APP = ["backup_nuvem", "pets_ilimitados", "historico_saude", "anexos", "alimentacao", "pdf_completo", "alertas_whatsapp", "clube_petgo"] as const;
 export type RecursoApp = (typeof RECURSOS_APP)[number];
 export const ROTULOS_RECURSO: Record<RecursoApp, string> = {
   backup_nuvem: "Backup na nuvem (troque de celular sem perder nada)",
@@ -55,6 +55,7 @@ export const ROTULOS_RECURSO: Record<RecursoApp, string> = {
   alimentacao: "Alimentação (ração, quantidade, frequência)",
   pdf_completo: "Carteirinha completa em PDF (viagens, hotéis, companhias aéreas)",
   alertas_whatsapp: "Alertas de vacina e reforços por WhatsApp",
+  clube_petgo: "Clube PetGo (cupons do mês nos parceiros e pontos em dobro — ./clubePetgo.ts)",
 };
 export const GRATIS = { maxPets: 1, descricao: "1 pet e as vacinas (com QR Code para o veterinário e PDF das vacinas)" };
 
@@ -71,14 +72,18 @@ export const diasDoPeriodo = (p: Periodo) => (p === "anual" ? 365 : 30);
 // (preço da LOJA; ids dos produtos nas lojas/RevenueCat em produto_loja_*); os demais = COMBOS da vitrine.
 export const ASSINATURA_PADRAO = { dias_gratis: 7, limite_mb: 500, preco_mensal: 3.9, preco_anual: 37.9 };
 export const CATALOGO_PADRAO: Record<string, any>[] = [
-  { codigo: "backup", nome: "PetGo360 Backup na nuvem", tipo: "assinatura", recursos: ["backup_nuvem"], preco_mensal: 3.9, preco_anual: 37.9, dias_gratis: 7, limite_mb: 500,
+  { codigo: "backup", nome: "PetGo360 Backup na nuvem", tipo: "assinatura", recursos: ["backup_nuvem"], preco_mensal: 3.9, preco_anual: 37.9, preco_loja_mensal: 4.9, preco_loja_anual: 47.9, dias_gratis: 7, limite_mb: 500,
     produto_loja_mensal: "petgo360_backup_mensal", produto_loja_anual: "petgo360_backup_anual", destaque: true, ordem: 1, icone: "cloud-check-outline",
     descricao: "Seus pets, vacinas e registros guardados na nuvem: troque de celular sem perder nada. 7 dias grátis." },
-  { codigo: "combo_whatsapp", nome: "Combo WhatsApp + Histórico", tipo: "recurso", recursos: ["alertas_whatsapp", "historico_saude", "anexos"], preco_mensal: 2.9, preco_anual: 27.9, ordem: 2, icone: "whatsapp",
+  // Clube PetGo (15/11/2026): assinatura SEPARADA do Backup — cupons do mês nos parceiros e pontos em dobro (./clubePetgo.ts).
+  { codigo: "clube", nome: "Clube PetGo", tipo: "assinatura", recursos: ["clube_petgo"], preco_mensal: 9.9, preco_anual: 99, preco_loja_mensal: 9.9, preco_loja_anual: 99, dias_gratis: 0,
+    produto_loja_mensal: "petgo360_clube_mensal", produto_loja_anual: "petgo360_clube_anual", ordem: 2, icone: "crown-outline",
+    descricao: "Cupons de desconto todo mês nos parceiros PetGo da sua cidade (banho, consulta, ração...), pontos em dobro e trocas exclusivas." },
+  { codigo: "combo_whatsapp", nome: "Combo WhatsApp + Histórico", tipo: "recurso", recursos: ["alertas_whatsapp", "historico_saude", "anexos"], preco_mensal: 2.9, preco_anual: 27.9, preco_loja_mensal: 3.9, preco_loja_anual: 34.9, ordem: 2, icone: "whatsapp",
     descricao: "Carteira e alertas de vacina pelo WhatsApp e o histórico de atendimentos (vermífugo, consultas, cirurgias, exames, medicação) com fotos de laudos." },
-  { codigo: "mais_pets", nome: "Mais pets", tipo: "recurso", recursos: ["pets_ilimitados"], preco_mensal: 1.9, preco_anual: 17.9, ordem: 3, icone: "paw", descricao: "Cadastre todos os seus pets." },
-  { codigo: "alimentacao", nome: "Alimentação", tipo: "recurso", recursos: ["alimentacao"], preco_mensal: 0.9, preco_anual: 8.9, ordem: 4, icone: "food-drumstick-outline", descricao: "Ração, quantidade diária, frequência e dietas especiais." },
-  { codigo: "pdf_completo", nome: "Carteirinha completa em PDF", tipo: "recurso", recursos: ["pdf_completo"], preco_mensal: 0.9, preco_anual: 8.9, ordem: 5, icone: "file-pdf-box", descricao: "PDF com vacinas, alimentação e histórico, para viagens e hotéis." },
+  { codigo: "mais_pets", nome: "Mais pets", tipo: "recurso", recursos: ["pets_ilimitados"], preco_mensal: 1.9, preco_anual: 17.9, preco_loja_mensal: 2.9, preco_loja_anual: 22.9, ordem: 3, icone: "paw", descricao: "Cadastre todos os seus pets." },
+  { codigo: "alimentacao", nome: "Alimentação", tipo: "recurso", recursos: ["alimentacao"], preco_mensal: 0.9, preco_anual: 8.9, preco_loja_mensal: 1.9, preco_loja_anual: 11.9, ordem: 4, icone: "food-drumstick-outline", descricao: "Ração, quantidade diária, frequência e dietas especiais." },
+  { codigo: "pdf_completo", nome: "Carteirinha completa em PDF", tipo: "recurso", recursos: ["pdf_completo"], preco_mensal: 0.9, preco_anual: 8.9, preco_loja_mensal: 1.9, preco_loja_anual: 11.9, ordem: 5, icone: "file-pdf-box", descricao: "PDF com vacinas, alimentação e histórico, para viagens e hotéis." },
   { codigo: "plano_saude", nome: "Combo Plano de saúde pet", tipo: "servico", categoria: "plano_saude", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 10, parceiro: "", icone: "hospital-box-outline",
     descricao: "Consultas, exames e emergência com a rede do parceiro. Preço conforme o porte e a idade do pet." },
   { codigo: "plano_funeral", nome: "Plano funeral pet (Despedida Tranquila)", tipo: "servico", categoria: "plano_funeral", recursos: [], preco_mensal: 0, preco_anual: 0, ordem: 11, parceiro: "", icone: "flower-outline",
@@ -434,6 +439,11 @@ export function linhaDoTempo(d: { vacinacoes?: any[]; registros?: any[] }, agora
 }
 
 // ── Contratação de módulo ────────────────────────────────────────────────
+/** Preço da compra DENTRO DO APP (App Store/Google Play) — itens digitais; sem preço da loja, o normal. */
+export function precoNaLoja(m: Record<string, any>, periodo: Periodo): number {
+  const loja = Number(periodo === "anual" ? m?.preco_loja_anual : m?.preco_loja_mensal) || 0;
+  return loja || precoDoModulo(m, periodo);
+}
 export function precoDoModulo(m: Record<string, any>, periodo: Periodo): number { return Number(periodo === "anual" ? m.preco_anual : m.preco_mensal) || 0; }
 export const sobConsulta = (m: Record<string, any>) => m.tipo === "servico" && !precoDoModulo(m, "mensal") && !precoDoModulo(m, "anual");
 
@@ -482,6 +492,8 @@ export function planejarAtivacao(p: { assinatura: Record<string, any>; modulo: R
   const fim = inicio + diasDoPeriodo(periodo) * DIA;
   if (p.modulo.tipo === "servico") servicos[p.modulo.codigo] = fim;
   else for (const r of p.modulo.recursos ?? []) recursos[r] = Math.max(ms(recursos[r]) ?? 0, fim);
+  // serviço que INCLUI recursos digitais do app (ex.: plano de saúde com o Backup) — ativados junto, pelo mesmo prazo
+  if (p.modulo.tipo === "servico") for (const r of p.modulo.inclui_recursos ?? []) recursos[r] = Math.max(ms(recursos[r]) ?? 0, fim);
   return {
     patchPagamento: p.pagamento ? { status: "aprovado", pago_em: agora } : null,
     patchAssinatura: { status: "ativa", inicio_ciclo_em: inicio, fim_em: fim, proxima_cobranca_em: fim },

@@ -15,6 +15,7 @@ const LINKS = [
   { href: "/#modulos", rotulo: "Módulos e serviços" },
   { href: "/#veterinarios", rotulo: "Para veterinários" },
   { href: "/guia", rotulo: "Guia Pet" },
+  { href: "/loja", rotulo: "Loja" },
   { href: "/perdidos", rotulo: "Pets perdidos" },
   { href: "/denuncia", rotulo: "Denunciar maus-tratos" },
   { href: "/#contato", rotulo: "Contato" },
@@ -74,6 +75,8 @@ export function Footer({ config }: { config: ConfigSite }) {
           <div>
             <h4>Profissionais</h4>
             <Link href="/#veterinarios">Veterinários e pet shops</Link>
+            <Link href="/loja">Loja (Backup, Clube e serviços)</Link>
+            <Link href="/parceiro">Portal do Parceiro</Link>
             <Link href="/guia">Guia Pet (veterinários, pet shops…)</Link>
             <Link href="/perdidos">Pets perdidos e encontrados</Link>
             <Link href="/denuncia">Disque Denúncia Pet (maus-tratos)</Link>
