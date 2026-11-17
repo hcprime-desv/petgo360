@@ -40,7 +40,7 @@ export const provedorGateway = (id: any) => PROVEDORES_GATEWAY.find((p) => p.id 
 // cashback. Ex.: Pix: custo 0,03%, tarifa 5%, cashback 2% → margem 2,97%.
 export const FORMAS_PAGAMENTO = [
   { id: "pix", rotulo: "Pix" }, { id: "credito_vista", rotulo: "Cartão de crédito à vista" }, { id: "credito_parcelado", rotulo: "Cartão de crédito parcelado" },
-  { id: "debito", rotulo: "Cartão de débito" }, { id: "boleto", rotulo: "Boleto" },
+  { id: "debito", rotulo: "Cartão de débito" }, { id: "boleto", rotulo: "Boleto" }, { id: "link", rotulo: "Link de pagamento" },
 ] as const;
 export type FormaPagamento = (typeof FORMAS_PAGAMENTO)[number]["id"];
 export type Tarifa = { custo_pct: number; custo_fixo: number; tarifa_pct: number; tarifa_fixa: number; cashback_pct: number; ativo: boolean; prazo_repasse_dias: number };
@@ -51,6 +51,7 @@ export const TARIFAS_PADRAO: Record<FormaPagamento, Tarifa> = {
   credito_parcelado: { custo_pct: 4.99, custo_fixo: 0.49, tarifa_pct: 6, tarifa_fixa: 0, cashback_pct: 1, ativo: false, prazo_repasse_dias: 30 },
   debito: { custo_pct: 1.99, custo_fixo: 0.35, tarifa_pct: 5, tarifa_fixa: 0, cashback_pct: 2, ativo: false, prazo_repasse_dias: 2 },
   boleto: { custo_pct: 0, custo_fixo: 1.99, tarifa_pct: 5, tarifa_fixa: 0, cashback_pct: 1, ativo: false, prazo_repasse_dias: 2 },
+  link: { custo_pct: 3.49, custo_fixo: 0.49, tarifa_pct: 6, tarifa_fixa: 0, cashback_pct: 1, ativo: false, prazo_repasse_dias: 30 },
 };
 const cent = (v: number) => Math.round(v * 100) / 100;
 export type ContaTarifa = { valor: number; custo: number; tarifa: number; cashback: number; margem: number; repasse: number; margemPct: number };
@@ -74,7 +75,7 @@ export type ConfigGateway = {
   de_para: DeParaGateway | null;
   repasse: ConfigRepasse;
 };
-export type ConfigRepasse = { modo: "solicitado" | "automatico"; minimo: number; tarifa_saque: number };
+export type ConfigRepasse = { modo: "solicitado" | "automatico"; minimo: number; tarifa_saque: number; id_gateway?: string }; // id_gateway: quem faz o Pix de saída
 export const MODOS_REPASSE = [{ valor: "solicitado", rotulo: "Solicitado pelo recebedor (no portal)" }, { valor: "automatico", rotulo: "Automático para a conta do recebedor (quando libera)" }] as const;
 const amb = (url = ""): AmbienteConfig => ({ url_api: url, id_conta: "", chave_final: "", webhook_final: "", chave_pix: "" });
 export const CONFIG_GATEWAY_PADRAO: ConfigGateway = {
@@ -104,15 +105,91 @@ export function pendenciasGateway(c: ConfigGateway): string[] {
   const p: string[] = [];
   if (!a.url_api) p.push(`Endereço da API (${c.ambiente}).`);
   if (!a.chave_final) p.push(`Chave da API (${c.ambiente}) — envie pelo botão "Salvar chave".`);
-  if (!c.formas.pix && !c.formas.cartao && !c.formas.boleto) p.push("Ligue ao menos uma forma de pagamento.");
+  if (!FORMAS_PAGAMENTO.some((f) => tarifaDe(c, f.id).ativo)) p.push("Ligue ao menos uma forma de pagamento.");
   return p;
 }
 /** Receptor PÚBLICO dos webhooks (PHP no p2pcorp.com.br → fila `bankFila` no Firebase; o bank-manager escuta a fila). */
-export const URL_RECEPTOR_WEBHOOK = "https://p2pcorp.com.br/webhook/bankhook_p2p.php";
+export const URL_RECEPTOR_WEBHOOK = "https://hyperchannel.com.br/webhook/bankhook_p2p.php"; // web-hook novo no endereço antigo (16/11/2026): o tenant decide o projeto Firebase
 export const COLECAO_FILA_WEBHOOK = "bankFila";
 /** Endereço do webhook para cadastrar no painel do gateway (token na query quando o gateway não manda cabeçalho). */
-export const urlWebhookGateway = (c: ConfigGateway, tenant: string) => `${URL_RECEPTOR_WEBHOOK}?tenant=${encodeURIComponent(tenant)}&provedor=${encodeURIComponent(c.provedor)}`;
+/** Endereço do RECEPTOR dos webhooks de pagamento deste ambiente (dono, 16/11/2026): configurável em Meios de Pagamento →
+ *  Situação (`gateway_config/atual.url_receptor_webhook`) — muda de servidor/domínio sem build; vazio = o padrão da P2P. */
+export const urlReceptorWebhook = (atual?: any) => {
+  const u = String(atual?.url_receptor_webhook ?? "").trim();
+  return /^https:\/\/\S+$/i.test(u) ? u : URL_RECEPTOR_WEBHOOK;
+};
+export const urlWebhookGateway = (c: ConfigGateway & { id?: string }, tenant: string, receptor?: string) =>
+  `${receptor || URL_RECEPTOR_WEBHOOK}?tenant=${encodeURIComponent(tenant)}&provedor=${encodeURIComponent(c.provedor)}${c.id ? `&gateway=${encodeURIComponent(c.id)}` : ""}`;
 export const finalSegredo = (v: string) => (String(v ?? "").length >= 4 ? "…" + String(v).slice(-4) : "");
+
+// ── VÁRIOS GATEWAYS E REGRAS DE COBRANÇA (dono, 16/11/2026) ─────────────────────────────────────────────────────────────
+// Menu próprio "Pagamentos" (fora dos Parâmetros). Cada parceiro de pagamento é um CADASTRO em `gateway_cadastros/{id}` (provedor,
+// sandbox/produção, formas, TARIFAS próprias — segredos no cofre do bank-manager por gateway). As REGRAS (em `gateway_config/atual`,
+// campo `regras`) dizem qual gateway atende cada FORMA de pagamento e cada TIPO DE VENDA, com um gateway RESERVA se o principal não
+// atender. Sem cadastros, a configuração antiga de `gateway_config/atual` vale como o gateway "principal" (nada se perde).
+export const COLECAO_GATEWAYS = "gateway_cadastros";
+export const ID_GATEWAY_PRINCIPAL = "principal";
+export type GatewayCadastro = ConfigGateway & { id: string; nome: string; ativo: boolean; ordem: number };
+export const TIPOS_VENDA = [
+  { valor: "*", rotulo: "Todos os tipos de venda" },
+  { valor: "assinatura", rotulo: "Assinaturas e combos" },
+  { valor: "loja", rotulo: "Loja (site e WhatsApp)" },
+  { valor: "clube", rotulo: "Clube" },
+  { valor: "parceiro", rotulo: "Pagamento no parceiro" },
+  { valor: "operadora", rotulo: "Serviços de operadoras (planos, seguros)" },
+  { valor: "outros", rotulo: "Outros" },
+] as const;
+export type TipoVenda = (typeof TIPOS_VENDA)[number]["valor"];
+/** Tipo de venda de um pagamento: o campo `tipo_venda` ou, sem ele, deduzido do `tipo` que a aplicação grava. */
+export const tipoVendaDoPagamento = (p: any): string =>
+  String(p?.tipo_venda || ({ compra_loja: "loja", pagamento_parceiro: "parceiro", assinatura: "assinatura", combo: "assinatura", clube: "clube", servico: "operadora", operadora: "operadora" } as Record<string, string>)[String(p?.tipo ?? "")] || "outros");
+export type RegraGateway = { id: string; forma: FormaPagamento | "*"; tipo_venda: string; id_gateway: string; id_gateway_reserva: string; ativo: boolean };
+/** Os gateways cadastrados (ativos ou não), em ordem; sem cadastro, o antigo `gateway_config/atual` vira o "principal". */
+export function lerGateways(cadastros: any[] | null | undefined, configAtual: any): GatewayCadastro[] {
+  const lista = (cadastros ?? []).filter((d) => d && d.id);
+  if (!lista.length) {
+    const c = lerConfigGateway(configAtual);
+    return [{ ...c, id: ID_GATEWAY_PRINCIPAL, nome: provedorGateway(c.provedor).nome, ativo: true, ordem: 0 }];
+  }
+  return lista.map((d, i) => ({ ...lerConfigGateway(d), id: String(d.id), nome: String(d.nome || provedorGateway(d.provedor).nome), ativo: d.ativo !== false, ordem: Number(d.ordem ?? i) || 0 }))
+    .sort((a, b) => a.ordem - b.ordem);
+}
+export const lerRegras = (atual: any): RegraGateway[] =>
+  (Array.isArray(atual?.regras) ? atual.regras : []).filter((r: any) => r && r.id_gateway)
+    .map((r: any, i: number) => ({ id: String(r.id || `r${i + 1}`), forma: r.forma || "*", tipo_venda: r.tipo_venda || "*", id_gateway: String(r.id_gateway), id_gateway_reserva: String(r.id_gateway_reserva || ""), ativo: r.ativo !== false }));
+/** O gateway atende esta forma? (cadastro ativo e a tarifa da forma ligada) */
+export const gatewayAtende = (g: GatewayCadastro | null | undefined, forma: FormaPagamento) => !!g && g.ativo && tarifaDe(g, forma).ativo && formaSuportada(g, forma);
+/** O bank-manager sabe cobrar esta forma por este gateway? Simulado: todas. De-para: o Pix e as formas descritas em
+ *  `de_para.formas`. Adaptadores fixos (Asaas, Mercado Pago, Pagar.me): só o Pix — outra forma, use o de-para. */
+export function formaSuportada(g: { provedor: string; de_para?: DeParaGateway | null } | null | undefined, forma: FormaPagamento): boolean {
+  if (!g) return false;
+  if (g.provedor === "simulado") return true;
+  if (g.provedor === "depara") return forma === "pix" || !!g.de_para?.formas?.[forma];
+  return forma === "pix";
+}
+/** QUAL GATEWAY cobra: a regra mais específica (tipo de venda exato vale mais que "todos"; forma exata, mais que "todas") cujo
+ *  gateway atende a forma; se não, a reserva dela; sem regra que sirva, o 1º gateway ativo (pela ordem) que atende a forma. */
+export function escolherGateway(gateways: GatewayCadastro[], regras: RegraGateway[], forma: FormaPagamento, tipoVenda: string):
+  { gateway: GatewayCadastro | null; reserva: GatewayCadastro | null; regra: RegraGateway | null; motivo: string } {
+  const achar = (id: string) => gateways.find((g) => g.id === id) ?? null;
+  const nota = (r: RegraGateway) => (r.tipo_venda === tipoVenda ? 2 : 0) + (r.forma === forma ? 1 : 0);
+  const servem = regras.filter((r) => r.ativo && (r.forma === forma || r.forma === "*") && (r.tipo_venda === tipoVenda || r.tipo_venda === "*")).sort((a, b) => nota(b) - nota(a));
+  for (const r of servem) {
+    const g = achar(r.id_gateway), res = achar(r.id_gateway_reserva);
+    if (gatewayAtende(g, forma)) return { gateway: g, reserva: gatewayAtende(res, forma) ? res : null, regra: r, motivo: "regra" };
+    if (gatewayAtende(res, forma)) return { gateway: res, reserva: null, regra: r, motivo: "reserva" };
+  }
+  const g = gateways.find((x) => gatewayAtende(x, forma)) ?? null;
+  return { gateway: g, reserva: null, regra: null, motivo: g ? "padrao" : `Nenhum gateway ativo atende ${FORMAS_PAGAMENTO.find((f) => f.id === forma)?.rotulo ?? forma}.` };
+}
+/** Tarifa que vale para a cobrança: a do gateway escolhido para a forma e o tipo de venda. */
+export function tarifaDaCobranca(gateways: GatewayCadastro[], regras: RegraGateway[], forma: FormaPagamento, tipoVenda: string): Tarifa {
+  const g = escolherGateway(gateways, regras, forma, tipoVenda).gateway;
+  return g ? tarifaDe(g, forma) : TARIFAS_PADRAO[forma];
+}
+/** Gateway que faz os REPASSES (Pix de saída): o escolhido em `repasse.id_gateway` ou o que atende Pix. */
+export const gatewayDoRepasse = (gateways: GatewayCadastro[], regras: RegraGateway[], repasse: ConfigRepasse | null | undefined) =>
+  gateways.find((g) => g.id === repasse?.id_gateway && g.ativo) ?? escolherGateway(gateways, regras, "pix", "*").gateway;
 
 // ── DE-PARA (gateway universal — dono, 15/11/2026) ─────────────────────────────────────────────────────────────────────
 // Do NOSSO lado os dados são FIXOS; o de-para diz como cada gateway os recebe e devolve. Trocar de gateway = trocar o de-para
@@ -122,11 +199,17 @@ export const finalSegredo = (v: string) => (String(v ?? "").length >= 4 ? "…" 
 // ({{cliente.id}}). Texto que é SÓ um marcador mantém o tipo (número continua número).
 export type PassoDePara = { nome: string; metodo: "GET" | "POST" | "PUT" | "PATCH"; caminho: string; corpo?: any; cabecalhos?: Record<string, string> };
 export type StatusNosso = "pendente" | "aprovado" | "recusado" | "estornado" | "expirado";
+/** Onde ler o retorno: id (obrigatório), Pix (copia e cola, QR), link de pagamento/checkout, boleto (linha e PDF), validade. */
+export type SaidaDePara = { id: string; copia_cola?: string; qr_base64?: string; link?: string; expira?: string; linha_digitavel?: string; boleto_url?: string };
 export type DeParaGateway = {
   nome: string;
   auth: { tipo: "bearer" | "header" | "basic" | "query"; nome?: string };     // header: nome do cabeçalho; query: nome do parâmetro
   criar: PassoDePara[];                                                          // chamadas em ordem para criar a cobrança Pix
-  saida: { id: string; copia_cola: string; qr_base64?: string; link?: string; expira?: string }; // caminhos na resposta (passo.campo)
+  saida: SaidaDePara;                                                            // caminhos na resposta (passo.campo)
+  /** QUALQUER MEIO DE PAGAMENTO (16/11/2026): envio e retorno de cada forma (crédito, débito, boleto, link...). A forma sem
+   *  entrada aqui não é oferecida por este gateway; o Pix usa `formas.pix` se existir, senão `criar`/`saida` acima.
+   *  Marcadores extras: {{forma}}, {{parcelas}}. */
+  formas?: Partial<Record<FormaPagamento, { criar: PassoDePara[]; saida: SaidaDePara }>>;
   consultar?: { metodo: "GET" | "POST"; caminho: string; status: string };      // {{id}} = id no gateway; status = caminho
   status: Record<string, StatusNosso>;                                           // valor do gateway → o nosso
   webhook: { id: string; status: string; token_cabecalho?: string; token_query?: string };
@@ -162,14 +245,20 @@ export function problemasDePara(d: DeParaGateway | null | undefined): string[] {
   const p: string[] = [];
   if (!d.criar?.length) p.push("Falta ao menos um passo em \"criar\".");
   if (!d.saida?.id || !d.saida?.copia_cola) p.push("Diga onde ler o id e o Pix copia e cola (saida.id e saida.copia_cola).");
+  for (const [f, x] of Object.entries(d.formas ?? {})) {
+    if (!x?.criar?.length) p.push(`formas.${f}: falta ao menos um passo em "criar".`);
+    if (!x?.saida?.id) p.push(`formas.${f}: diga onde ler o id (saida.id).`);
+    if (f !== "pix" && x?.saida && !x.saida.link && !x.saida.linha_digitavel && !x.saida.boleto_url) p.push(`formas.${f}: diga onde ler o link de pagamento ou o boleto (saida.link / linha_digitavel / boleto_url).`);
+  }
   if (!d.status || !Object.values(d.status).includes("aprovado")) p.push("A tabela de status precisa dizer qual valor é \"aprovado\".");
   if (!d.webhook?.id || !d.webhook?.status) p.push("Diga onde o webhook traz o id e o status.");
   return p;
 }
 /** Contexto fixo do nosso lado para uma cobrança. */
-export function contextoCobranca(n: { idExterno: string; valor: number; descricao: string; validadeMin: number; pagador: { nome: string; documento: string; email: string; telefone: string } }, chave: string, idConta: string, agora = Date.now()) {
+export function contextoCobranca(n: { idExterno: string; valor: number; descricao: string; validadeMin: number; pagador: { nome: string; documento: string; email: string; telefone: string }; forma?: string; parcelas?: number }, chave: string, idConta: string, agora = Date.now()) {
   const exp = new Date(agora + n.validadeMin * 60_000);
   return {
+    forma: n.forma ?? "pix", parcelas: n.parcelas ?? 1,
     valor: Math.round(n.valor * 100) / 100, valor_centavos: Math.round(n.valor * 100), descricao: n.descricao, id_externo: n.idExterno,
     vencimento: new Date(agora + 86_400_000).toISOString().slice(0, 10), expira_iso: exp.toISOString(), validade_min: n.validadeMin, validade_s: n.validadeMin * 60,
     pagador: { ...n.pagador, documento: String(n.pagador.documento ?? "").replace(/\D/g, ""), telefone: String(n.pagador.telefone ?? "").replace(/\D/g, "") }, chave, id_conta: idConta,
@@ -203,6 +292,23 @@ export const MODELOS_DE_PARA: Record<string, DeParaGateway> = {
     webhook: { id: "payment.id", status: "event", token_cabecalho: "asaas-access-token" },
     teste: { metodo: "GET", caminho: "/finance/balance" },
     transferir: { metodo: "POST", caminho: "/transfers", corpo: { value: "{{valor}}", pixAddressKey: "{{chave_pix}}", pixAddressKeyType: "{{chave_pix_tipo_asaas}}", description: "Repasse {{id_externo}}" }, id: "id" },
+    formas: {
+      boleto: {
+        criar: [
+          { nome: "cliente", metodo: "POST", caminho: "/customers", corpo: { name: "{{pagador.nome}}", cpfCnpj: "{{pagador.documento}}", email: "{{pagador.email}}", externalReference: "{{id_externo}}" } },
+          { nome: "pagamento", metodo: "POST", caminho: "/payments", corpo: { customer: "{{cliente.id}}", billingType: "BOLETO", value: "{{valor}}", dueDate: "{{vencimento}}", description: "{{descricao}}", externalReference: "{{id_externo}}" } },
+          { nome: "linha", metodo: "GET", caminho: "/payments/{{pagamento.id}}/identificationField" },
+        ],
+        saida: { id: "pagamento.id", boleto_url: "pagamento.bankSlipUrl", linha_digitavel: "linha.identificationField", link: "pagamento.invoiceUrl" },
+      },
+      link: {
+        criar: [
+          { nome: "cliente", metodo: "POST", caminho: "/customers", corpo: { name: "{{pagador.nome}}", cpfCnpj: "{{pagador.documento}}", email: "{{pagador.email}}", externalReference: "{{id_externo}}" } },
+          { nome: "pagamento", metodo: "POST", caminho: "/payments", corpo: { customer: "{{cliente.id}}", billingType: "UNDEFINED", value: "{{valor}}", dueDate: "{{vencimento}}", description: "{{descricao}}", externalReference: "{{id_externo}}" } },
+        ],
+        saida: { id: "pagamento.id", link: "pagamento.invoiceUrl" },
+      },
+    },
   },
   mercadopago: {
     nome: "Mercado Pago (de-para)",

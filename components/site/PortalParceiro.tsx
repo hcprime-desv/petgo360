@@ -7,6 +7,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BadgePercent, Banknote, CreditCard, LogOut, QrCode, Receipt, Store, Wallet } from "lucide-react";
 import { atualizar, criarComIdSequencial, filtrarOnce, gravarComId } from "@/lib/firebase/gen";
+import { getApp } from "firebase/app";
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { conferirSenha, gerarHashSenha, normalizarEmail } from "@/lib/admin/senhas";
 import { COLECOES_REPASSE, TIPOS_CHAVE_PIX, problemaContaBancaria, saldoRecebedor } from "@/lib/gatewayContrato";
 import CobrancaParceiro from "./CobrancaParceiro";
@@ -18,11 +20,18 @@ const CATEGORIAS = [["veterinario", "Veterinário"], ["hospital_24h", "Hospital 
 type Aba = "resumo" | "vendas" | "extrato" | "repasses" | "conta" | "cobrar" | "cupons";
 const bytes = (n: number) => crypto.getRandomValues(new Uint8Array(n));
 
+// FIREBASE AUTH do parceiro: senha conferida no banco (PBKDF2) e sessão do Auth aberta junto; conta fora do Auth = criada na hora.
+async function abrirSessaoAuth(email: string, senha: string) {
+  const auth = getAuth(getApp());
+  try { await signInWithEmailAndPassword(auth, email, senha); return; } catch { /* conta fora do Auth ou senha ainda não sincronizada */ }
+  try { await createUserWithEmailAndPassword(auth, email, senha); } catch { /* o back-end acerta em seguida */ }
+}
+
 export default function PortalParceiro() {
   const [sessao, setSessao] = useState<{ id: string; nome: string; codigo: string } | null>(null);
   const [modo, setModo] = useState<"entrar" | "cadastrar">("entrar");
   useEffect(() => { try { const s = JSON.parse(localStorage.getItem(CHAVE) || "null"); if (s?.id && s.ate > Date.now()) setSessao(s); } catch { /* sem sessão */ } }, []);
-  const sair = () => { try { localStorage.removeItem(CHAVE); } catch { /* ok */ } setSessao(null); };
+  const sair = () => { try { void signOut(getAuth(getApp())); } catch { /* sem Auth */ } try { localStorage.removeItem(CHAVE); } catch { /* ok */ } setSessao(null); };
   if (sessao) return <Painel sessao={sessao} sair={sair} />;
   return modo === "entrar" ? <Entrar aoEntrar={setSessao} cadastrar={() => setModo("cadastrar")} /> : <Cadastrar voltar={() => setModo("entrar")} />;
 }
@@ -36,6 +45,7 @@ function Entrar({ aoEntrar, cadastrar }: { aoEntrar: (s: any) => void; cadastrar
       if (!p || !(await conferirSenha(senha, p))) { setErro("E-mail ou senha incorretos."); return; }
       if (p.aprovacao === "pendente") { setErro("Seu cadastro está em análise pela equipe PetGo360. Você recebe um aviso quando for liberado."); return; }
       if (p.status !== "ativo") { setErro("Parceria inativa. Fale com a central do PetGo360."); return; }
+      await abrirSessaoAuth(normalizarEmail(email), senha); // Firebase Auth (dono, 17/11/2026) — o back-end sincroniza a senha
       const s = { id: String(p.id), nome: p.nome, codigo: p.codigo, ate: Date.now() + 12 * 3600_000 };
       try { localStorage.setItem(CHAVE, JSON.stringify(s)); } catch { /* ok */ }
       aoEntrar(s);
