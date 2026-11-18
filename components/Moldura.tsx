@@ -3,13 +3,14 @@
 // Topo e rodapé no layout do site padrão (p2pcorp — mesmas classes).
 import Link from "next/link";
 import { useState } from "react";
-import { Download, Menu, X } from "lucide-react";
+import { ChevronDown, Download, Menu, X } from "lucide-react";
 import { BotaoTemaSite } from "./public/TemaSite";
 import Avisos from "./site/Avisos";
 import { useConfigSite } from "@/lib/siteAoVivo";
 import type { ConfigSite } from "@/lib/site";
 
-const LINKS = [
+type ItemMenu = { href: string; rotulo: string; filhos?: { href: string; rotulo: string }[] };
+const LINKS: ItemMenu[] = [
   { href: "/#inicio", rotulo: "Início" },
   { href: "/#como-funciona", rotulo: "Como funciona" },
   { href: "/#modulos", rotulo: "Módulos e serviços" },
@@ -17,8 +18,14 @@ const LINKS = [
   { href: "/guia", rotulo: "Guia Pet" },
   { href: "/loja", rotulo: "Loja" },
   { href: "/perdidos", rotulo: "Pets perdidos" },
-  { href: "/denuncia", rotulo: "Denunciar maus-tratos" },
+  // DENÚNCIA (dono, 18/11/2026): menu com o formulário, a central dos pontos e o cadastro de ONGs/instituições
+  { href: "/denuncia", rotulo: "Denúncia", filhos: [
+    { href: "/denuncia", rotulo: "Denunciar maus-tratos" },
+    { href: "/denuncia/central", rotulo: "Central" },
+    { href: "/denuncia/ponto", rotulo: "Cadastro de ONG/Instituições" },
+  ] },
   { href: "/#contato", rotulo: "Contato" },
+  { href: "/admin", rotulo: "Admin" },
 ];
 
 function Logo({ branco = false }: { branco?: boolean }) {
@@ -29,6 +36,8 @@ function Logo({ branco = false }: { branco?: boolean }) {
 export function Header({ config }: { config: ConfigSite }) {
   const c = useConfigSite(config);
   const [aberto, setAberto] = useState(false);
+  const [sub, setSub] = useState<string | null>(null);
+  const fechar = () => { setAberto(false); setSub(null); };
   return (
     <div className="topo-fixo">
       <Avisos />
@@ -39,7 +48,12 @@ export function Header({ config }: { config: ConfigSite }) {
             <span className="logo-tema-escuro"><Logo branco /></span>
           </Link>
           <nav className={`links${aberto ? " aberto" : ""}`} aria-label="Menu principal">
-            {LINKS.map((l) => <Link key={l.href} href={l.href} onClick={() => setAberto(false)}>{l.rotulo}</Link>)}
+            {LINKS.map((l) => l.filhos ? (
+              <div key={l.rotulo} className={`menu-sub${sub === l.rotulo ? " aberto" : ""}`} onMouseEnter={() => setSub(l.rotulo)} onMouseLeave={() => setSub(null)}>
+                <button type="button" aria-expanded={sub === l.rotulo} onClick={() => setSub((x) => (x === l.rotulo ? null : l.rotulo))}>{l.rotulo} <ChevronDown size={15} /></button>
+                <div className="menu-sub-itens">{l.filhos.map((f) => <Link key={f.href} href={f.href} onClick={fechar}>{f.rotulo}</Link>)}</div>
+              </div>
+            ) : <Link key={l.href} href={l.href} onClick={fechar}>{l.rotulo}</Link>)}
             <Link href="/#baixar" className="btn btn-primary so-mobile" onClick={() => setAberto(false)}><Download size={18} /> Baixar o app</Link>
           </nav>
           <div className="nav-actions">

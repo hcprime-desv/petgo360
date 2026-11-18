@@ -8,7 +8,11 @@
 // "difusao_automatica"). SIGILO: a denúncia NÃO guarda quem denunciou (nem telefone, nem conta) — só o PROTOCOLO, que o
 // cidadão usa para acompanhar. TS puro e SEM import (cópia idêntica no back-end petall360: produtos/petgo360/denunciaPet/regras.ts).
 
-export const COLECOES_DENUNCIA = { denuncias: "denuncias_pet", orgaos: "orgaos_denuncia", difusoes: "difusoes_denuncia_pet" } as const;
+export const COLECOES_DENUNCIA = {
+  denuncias: "denuncias_pet", orgaos: "orgaos_denuncia", difusoes: "difusoes_denuncia_pet",
+  // PUCs (dono, 18/11/2026): o cadastro `orgaos_denuncia` passa a ser o de TODOS os pontos de recebimento — órgãos, ONGs e protetores
+  tramites: "denuncias_pet_tramites", mensagens: "denuncias_pet_mensagens", encaminhamentos: "denuncias_pet_encaminhamentos", pedidosPuc: "pucs_pedidos",
+} as const;
 export const GRUPO_PARAMETROS_DENUNCIA = "denuncia_pet";
 export const NOME_SERVICO = "Disque Denúncia Pet";
 
@@ -75,6 +79,8 @@ export type DadosDenuncia = {
   tipo: string; especie?: string; especie_outra?: string; quantidade?: string; uf: string; municipio: string; bairro?: string; endereco: string; referencia?: string;
   latitude?: number | null; longitude?: number | null; local?: string; frequencia?: string; responsavel?: string; descricao: string;
   fotos?: string[]; canal: "app" | "whatsapp" | "site" | "painel"; bytes: Uint8Array; agora?: number;
+  /** PUCs escolhidos por quem denuncia (vazio = a central decide) */
+  destinos?: string[];
 };
 /** Denúncia anônima pronta para gravar — recusa o que falta para encaminhar (tipo, estado, município, local, relato). */
 export function planejarDenunciaPet(d: DadosDenuncia) {
@@ -95,13 +101,16 @@ export function planejarDenunciaPet(d: DadosDenuncia) {
     local: txt(d.local, 20), frequencia: txt(d.frequencia, 20), responsavel: txt(d.responsavel, 300), descricao,
     fotos: (d.fotos ?? []).filter((f) => /^https?:\/\//.test(String(f))).slice(0, 6),
     canal: d.canal, anonima: true, status: "recebida", recebida_em: agora, difundida_em: null, encerrada_em: null, observacoes_central: "", created_at: agora,
+    // PUCs: quem escolheu + quem recebeu por trâmite (a central de cada PUC lista as denúncias com o id dela aqui)
+    destinos_escolhidos: [...new Set((d.destinos ?? []).map(String).filter(Boolean))].slice(0, 10),
+    pucs: [...new Set((d.destinos ?? []).map(String).filter(Boolean))].slice(0, 10),
   };
 }
 
 /** Órgãos que recebem: os do MUNICÍPIO + os de todo o ESTADO (município vazio), ativos e com e-mail. */
 export function orgaosParaDenuncia(orgaos: any[], uf: any, municipio: any): any[] {
   const u = String(uf ?? "").toUpperCase(), m = chaveMunicipio(municipio);
-  return (orgaos ?? []).filter((o) => o.status !== "inativo" && String(o.uf ?? "").toUpperCase() === u && emailsDoOrgao(o).length
+  return (orgaos ?? []).filter((o) => ehOrgao(o) && pucAtivo(o) && String(o.uf ?? "").toUpperCase() === u && emailsDoOrgao(o).length
     && (!String(o.municipio ?? "").trim() || chaveMunicipio(o.municipio) === m));
 }
 export const emailsDoOrgao = (o: any): string[] =>
@@ -142,3 +151,111 @@ export function motivoSemAcessoDenuncia(acesso: AcessoDenuncia, cliente: Record<
 }
 
 export const AVISO_SIGILO = "DENÚNCIA ANÔNIMA — a identidade do denunciante não é registrada pelo PetGo360. Documento de uso exclusivo do órgão destinatário; não divulgar.";
+
+// ═══════════════ PUCs — PONTOS DE RECEBIMENTO (dono, 18/11/2026) ═══════════════
+// Cada denúncia, além do e-mail, cai na CENTRAL de quem a recebe (PUC = ponto único de contato): ÓRGÃO competente (secretaria,
+// delegacia, promotoria...), ONG ou PROTETOR independente. Quem denuncia pode ESCOLHER para quem enviar (opcional, vários; vazio
+// = a central do PetGo decide). Cada PUC trata, conversa com o denunciante PELO PROTOCOLO (anônimo) e ENCAMINHA a um ou mais
+// órgãos (trâmite). Órgãos e estados usam o PAINEL; ONGs e protetores, o PORTAL no /admin do site (se cadastram e esperam a
+// APROVAÇÃO da central). Mesmo cadastro (`orgaos_denuncia`), mesma central nos dois.
+export const TIPOS_PUC = ["orgao", "ong", "protetor"] as const;
+export type TipoPuc = (typeof TIPOS_PUC)[number];
+export const ROTULOS_TIPO_PUC: Record<TipoPuc, string> = { orgao: "Órgão competente", ong: "ONG", protetor: "Protetor(a) independente" };
+export const tipoPuc = (o: any): TipoPuc => ((TIPOS_PUC as readonly string[]).includes(o?.tipo_puc) ? o.tipo_puc : "orgao");
+export const ehOrgao = (o: any) => tipoPuc(o) === "orgao";
+/** status do PUC: ativo | inativo | aguardando_aprovacao (ONG que se cadastrou) | recusado */
+export const pucAtivo = (o: any) => !["inativo", "aguardando_aprovacao", "recusado"].includes(String(o?.status ?? "ativo"));
+export const STATUS_PUC = ["ativo", "inativo", "aguardando_aprovacao", "recusado"] as const;
+export const ROTULOS_STATUS_PUC: Record<string, string> = { ativo: "Ativo", inativo: "Inativo", aguardando_aprovacao: "Aguardando aprovação", recusado: "Recusado" };
+/** Perfil do usuário de um PUC (painel ou portal) — vê só as denúncias do PUC dele (`usuarios.id_orgaos_denuncia`). */
+export const PERFIL_PUC = "puc";
+export const PERMISSAO_CENTRAL_PUC = "menu.petgo360.denuncias.central";
+
+/** PUCs que atendem o local (estado + município; município vazio = todo o estado), ativos — para quem denuncia escolher. */
+export function pucsDaRegiao(pucs: any[], uf: any, municipio: any): { orgaos: any[]; ongs: any[] } {
+  const u = String(uf ?? "").toUpperCase(), m = chaveMunicipio(municipio);
+  const daqui = (pucs ?? []).filter((o) => pucAtivo(o) && String(o.uf ?? "").toUpperCase() === u && (!String(o.municipio ?? "").trim() || chaveMunicipio(o.municipio) === m))
+    .sort((a, b) => Number(!!String(b.municipio ?? "").trim()) - Number(!!String(a.municipio ?? "").trim()) || String(a.nome).localeCompare(String(b.nome)));
+  return { orgaos: daqui.filter(ehOrgao), ongs: daqui.filter((o) => !ehOrgao(o)) };
+}
+export const nomePuc = (o: any) => String(o?.sigla ? `${o.nome} (${o.sigla})` : o?.nome ?? "—");
+
+// ── ETAPAS (a barra do atendimento): Recebida → Em análise → Encaminhada → Concluída ──
+export const ETAPAS_DENUNCIA = ["recebida", "em_analise", "encaminhada", "concluida"] as const;
+export type EtapaDenuncia = (typeof ETAPAS_DENUNCIA)[number];
+export const ROTULOS_ETAPA: Record<EtapaDenuncia, string> = { recebida: "Recebida", em_analise: "Em análise", encaminhada: "Encaminhada", concluida: "Concluída" };
+/** Etapa da denúncia na central do PetGo (status geral). */
+export const etapaDaDenuncia = (d: any): EtapaDenuncia =>
+  d?.status === "difundida" ? "encaminhada" : ["encerrada", "descartada"].includes(d?.status) ? "concluida" : ["em_analise", "sem_orgao"].includes(d?.status) ? "em_analise" : "recebida";
+
+// ── TRÂMITE: a denúncia na central de UM PUC (um documento por PUC × denúncia) ──
+export const STATUS_TRAMITE = ["recebida", "em_analise", "encaminhada", "concluida"] as const;
+export type StatusTramite = (typeof STATUS_TRAMITE)[number];
+export const ORIGENS_TRAMITE = { cidadao: "Escolhido por quem denunciou", central: "Encaminhada pela central do PetGo", puc: "Encaminhada por outro ponto" } as const;
+/** id fixo do trâmite (um por PUC × denúncia — encaminhar de novo não duplica) */
+export const idTramite = (idDenuncia: any, idPuc: any) => `${idDenuncia}_${idPuc}`;
+export function planejarTramite(p: { denuncia: any; puc: any; origem: keyof typeof ORIGENS_TRAMITE; deNome?: string; idPucOrigem?: string | null; nota?: string; agora?: number }) {
+  const agora = p.agora ?? Date.now();
+  return {
+    id: idTramite(p.denuncia.id, p.puc.id),
+    id_denuncias_pet: String(p.denuncia.id), protocolo: String(p.denuncia.protocolo ?? ""), id_orgaos_denuncia: String(p.puc.id), puc_nome: nomePuc(p.puc), tipo_puc: tipoPuc(p.puc),
+    origem: p.origem, id_orgaos_denuncia_origem: p.idPucOrigem ?? null, origem_nome: String(p.deNome ?? (p.origem === "cidadao" ? "Denunciante" : "Central PetGo")),
+    nota: String(p.nota ?? "").slice(0, 1000), status: "recebida" as StatusTramite, assumido_por: "", id_usuarios_assumido: null,
+    historico: [{ em: agora, status: "recebida", texto: `${ORIGENS_TRAMITE[p.origem]}${p.deNome ? ` (${p.deNome})` : ""}`, por: String(p.deNome ?? "") }],
+    created_at: agora, updated_at: agora,
+  };
+}
+/** Muda a situação do trâmite e registra no histórico. */
+export function avancarTramite(t: any, status: StatusTramite, por: string, texto: string, agora = Date.now()) {
+  if (!(STATUS_TRAMITE as readonly string[]).includes(status)) throw new Error("Situação inválida.");
+  return { status, updated_at: agora, historico: [...(t?.historico ?? []), { em: agora, status, texto: String(texto).slice(0, 300), por }] };
+}
+
+// ── CONVERSA PELO PROTOCOLO: mesmo formato das mensagens do chat dos sites (texto, foto, vídeo, áudio, documento, localização) ──
+export const TIPOS_MENSAGEM = ["text", "image", "video", "audio", "document", "location"] as const;
+export type TipoMensagem = (typeof TIPOS_MENSAGEM)[number];
+export type MensagemDenuncia = { type: TipoMensagem; body?: string; file?: string; mime_type?: string; nome_file?: string; latitude?: number; longitude?: number; endereco?: string };
+/** Mensagem pronta para gravar em `denuncias_pet_mensagens`. de = "denunciante" | "puc" | "central". Denunciante NUNCA leva identificação. */
+export function planejarMensagemDenuncia(p: { denuncia: any; de: "denunciante" | "puc" | "central"; m: MensagemDenuncia; autor?: string; idPuc?: string | null; pucNome?: string; canal?: string; agora?: number }) {
+  const agora = p.agora ?? Date.now(), m = p.m;
+  if (!(TIPOS_MENSAGEM as readonly string[]).includes(m.type)) throw new Error("Tipo de mensagem inválido.");
+  const body = String(m.body ?? "").trim().slice(0, 4000);
+  if (m.type === "text" && !body) throw new Error("Escreva a mensagem.");
+  if (["image", "video", "audio", "document"].includes(m.type) && !/^https?:\/\//.test(String(m.file ?? ""))) throw new Error("Arquivo não enviado.");
+  if (m.type === "location" && !(Number.isFinite(Number(m.latitude)) && Number.isFinite(Number(m.longitude)))) throw new Error("Localização inválida.");
+  return {
+    id_denuncias_pet: String(p.denuncia.id), protocolo: String(p.denuncia.protocolo ?? ""), de: p.de,
+    autor: p.de === "denunciante" ? "Denunciante" : String(p.autor ?? "").slice(0, 80), id_orgaos_denuncia: p.de === "puc" ? String(p.idPuc ?? "") : null,
+    puc_nome: p.de === "denunciante" ? "" : String(p.pucNome ?? (p.de === "central" ? "Central PetGo" : "")),
+    type: m.type, body, file: m.file ?? "", mime_type: m.mime_type ?? "", nome_file: m.nome_file ?? "",
+    latitude: m.type === "location" ? Number(m.latitude) : null, longitude: m.type === "location" ? Number(m.longitude) : null, endereco: String(m.endereco ?? "").slice(0, 200),
+    canal: p.canal ?? "", lida_denunciante: p.de === "denunciante", lida_central: p.de !== "denunciante", criado_em: agora, created_at: agora,
+  };
+}
+/** Texto da mensagem para o WhatsApp / aviso (mídia vira link). */
+export function textoDaMensagem(m: any): string {
+  const quem = m.de === "denunciante" ? "Você" : m.puc_nome || "Central";
+  const rot: Record<string, string> = { image: "📷 Foto", video: "🎥 Vídeo", audio: "🎤 Áudio", document: "📄 Arquivo" };
+  const corpo = m.type === "text" ? m.body : m.type === "location" ? `📍 Localização: https://maps.google.com/?q=${m.latitude},${m.longitude}${m.endereco ? ` (${m.endereco})` : ""}`
+    : `${rot[String(m.type)] ?? "📎"}: ${m.file}${m.body && m.body !== m.nome_file ? `\n${m.body}` : ""}`;
+  return `*${quem}:* ${corpo}`;
+}
+/** Tipo da mensagem pelo MIME do arquivo. */
+export const tipoPorMime = (mime: any): TipoMensagem => { const t = String(mime ?? ""); return t.startsWith("image") ? "image" : t.startsWith("video") ? "video" : t.startsWith("audio") ? "audio" : "document"; };
+
+// ── CADASTRO DE ONG / PROTETOR pelo site (aguarda a aprovação da central) ──
+export function planejarPedidoPuc(p: { tipo: string; nome: string; documento: string; responsavel: string; email: string; telefone: string; uf: string; municipio: string; descricao?: string; site?: string; senha: { senha_hash: string; senha_salt: string; senha_iteracoes: number }; agora?: number }) {
+  const agora = p.agora ?? Date.now();
+  if (!["ong", "protetor"].includes(p.tipo)) throw new Error("Escolha: ONG ou protetor(a) independente.");
+  const nome = txt(p.nome, 150); if (nome.length < 3) throw new Error("Informe o nome.");
+  const doc = String(p.documento ?? "").replace(/\D/g, "");
+  if (p.tipo === "ong" ? doc.length !== 14 : doc.length !== 11) throw new Error(p.tipo === "ong" ? "Informe o CNPJ da ONG (14 números)." : "Informe o CPF (11 números).");
+  const email = String(p.email ?? "").trim().toLowerCase(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("E-mail inválido.");
+  const uf = lerUf(p.uf); if (!uf) throw new Error("Informe o estado.");
+  if (String(p.telefone ?? "").replace(/\D/g, "").length < 10) throw new Error("Informe o telefone com DDD.");
+  if (!p.senha?.senha_hash) throw new Error("Crie uma senha.");
+  return {
+    tipo_puc: p.tipo, nome, documento: doc, responsavel: txt(p.responsavel, 100), email, telefone: String(p.telefone).replace(/\D/g, ""), uf, municipio: txt(p.municipio, 80),
+    descricao: txt(p.descricao, 1000), site: txt(p.site, 200), ...p.senha, status: "aguardando_aprovacao", created_at: agora, updated_at: agora,
+  };
+}

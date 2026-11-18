@@ -4,8 +4,12 @@
 // (foto, nome, espécie/raça, nº do passaporte) — nada de saúde nem telefone do tutor. "Encontrei este pet" grava o contato
 // de quem achou em `passaportes_avisos` e o back-end petall360 avisa o tutor no app e no WhatsApp. Vacinas e saúde
 // continuam no QR temporário do veterinário (/c/<token>).
+// BOTTON DA COLEIRA (dono, 18/11/2026): o mesmo QR também vai no botton (?o=b). Cada leitura é registrada em
+// `passaportes_leituras` e o tutor recebe o aviso no celular; se o tutor liberou, aparecem o nome dele e o botão de WhatsApp.
+// "Mostrar ao tutor onde estou" manda a localização para o mesmo aviso.
 import { useEffect, useState } from "react";
-import { CheckCircle2, MapPin, PawPrint } from "lucide-react";
+import { CheckCircle2, MapPin, MessageCircle, PawPrint } from "lucide-react";
+import { atualizar } from "@/lib/firebase/gen";
 import { getDocOnce, gravarComId } from "@/lib/firebase/gen";
 
 const digitos = (s: string) => s.replace(/\D/g, "");
@@ -19,7 +23,25 @@ export default function PassaportePublico({ token }: { token: string }) {
   const [erro, setErro] = useState("");
   const [enviado, setEnviado] = useState(false);
 
+  const [idLeitura, setIdLeitura] = useState<string | null>(null);
+  const [localEnviado, setLocalEnviado] = useState(false);
   useEffect(() => { getDocOnce("passaportes_publicos", token).then((d) => setPet(d && d.status !== "inativo" ? d : null)).catch(() => setPet(null)); }, [token]);
+  // LEITURA do QR: uma por visita (recarregar a página não repete o aviso)
+  useEffect(() => {
+    if (!pet) return;
+    const chave = `leitura_${token}`;
+    try { const ja = sessionStorage.getItem(chave); if (ja) { setIdLeitura(ja); return; } } catch { /* sem storage */ }
+    const origem = new URLSearchParams(window.location.search).get("o") === "b" ? "botton" : "passaporte";
+    const id = `site_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    gravarComId("passaportes_leituras", id, { id, token, origem, status: "pendente", criado_em: Date.now(), created_at: Date.now() })
+      .then(() => { setIdLeitura(id); try { sessionStorage.setItem(chave, id); } catch { /* sem storage */ } }).catch(() => {});
+  }, [pet, token]);
+  const mostrarOndeEstou = () => navigator.geolocation?.getCurrentPosition(async (p) => {
+    if (!idLeitura) return;
+    await atualizar("passaportes_leituras", idLeitura, { latitude: p.coords.latitude, longitude: p.coords.longitude, local_status: "pendente" }).catch(() => {});
+    setLocal({ latitude: p.coords.latitude, longitude: p.coords.longitude }); setLocalEnviado(true);
+  }, () => setErro("Não consegui pegar a localização — permita o acesso no navegador."));
+  const whats = pet?.contato?.whatsapp ? `https://wa.me/${String(pet.contato.whatsapp).replace(/^(?!55)/, "55")}?text=${encodeURIComponent(`Olá! Encontrei o(a) ${pet?.nome ?? "seu pet"} — li o QR Code ${idLeitura && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("o") === "b" ? "da coleira" : "do passaporte"} no PetGo360.`)}` : "";
 
   const pegarLocal = () => navigator.geolocation?.getCurrentPosition((p) => setLocal({ latitude: p.coords.latitude, longitude: p.coords.longitude }), () => setErro("Não consegui pegar a localização — escreva onde o pet está."));
   const enviar = async () => {
@@ -56,12 +78,23 @@ export default function PassaportePublico({ token }: { token: string }) {
         </div>
       </div>
 
+      {pet.contato?.nome || whats ? (
+        <div className="card">
+          <h2>Fale com o tutor</h2>
+          {pet.contato?.nome ? <p>Tutor(a): <b>{pet.contato.nome}</b></p> : null}
+          <div className="acoes-form" style={{ marginTop: 8 }}>
+            {whats ? <a className="btn btn-primary" href={whats} target="_blank" rel="noreferrer"><MessageCircle size={18} /> Falar com o tutor no WhatsApp</a> : null}
+            <button type="button" className="btn btn-outline" onClick={mostrarOndeEstou} disabled={localEnviado}><MapPin size={16} /> {localEnviado ? "Localização enviada ao tutor" : "Mostrar ao tutor onde estou"}</button>
+          </div>
+        </div>
+      ) : null}
+
       {enviado ? (
         <div className="ok-box"><CheckCircle2 size={18} style={{ display: "inline", verticalAlign: "-3px" }} /> Obrigado! O tutor de {pet.nome} foi avisado e vai falar com você pelo telefone informado.</div>
       ) : (
         <div className="card">
           <h2>Encontrou {pet.nome}?</h2>
-          <p className="texto-mut">Deixe o seu contato: avisamos o tutor na hora, pelo app e pelo WhatsApp. O telefone dele não aparece aqui.</p>
+          <p className="texto-mut">Deixe o seu contato: avisamos o tutor na hora, pelo app e pelo WhatsApp.{whats ? "" : " O telefone dele não aparece aqui."}</p>
           {!aberto ? (
             <button type="button" className="btn btn-primary" onClick={() => setAberto(true)}><PawPrint size={18} /> Encontrei este pet</button>
           ) : (
