@@ -29,7 +29,9 @@ const urgente = (d: any) => d?.frequencia === "agora" || ["agressao", "envenenam
 
 /** `desconto` = quanto da altura da janela fica FORA da central (topo do site/painel, linhas acima) — a fila, o atendimento e o
  *  lado direito ocupam o resto, cada um com a própria rolagem. */
-export default function CentralDenuncias({ fonte, tema = "auto", titulo, desconto = 250 }: { fonte: FonteCentral; tema?: "claro" | "escuro" | "auto"; titulo?: string; desconto?: number }) {
+// TOPO (dono, 18/11/2026): sem as linhas de título/usuário (tomavam espaço) — ao lado dos indicadores ficam EXPANDIR (tela cheia),
+// quem está logado (no 👤) e FECHAR (`aoFechar`: sair da central no site / voltar ao início no painel).
+export default function CentralDenuncias({ fonte, tema = "auto", titulo, desconto = 250, usuario, aoFechar }: { fonte: FonteCentral; tema?: "claro" | "escuro" | "auto"; titulo?: string; desconto?: number; usuario?: string; aoFechar?: () => void }) {
   const puc = fonte.puc;
   const [denuncias, setDenuncias] = useState<any[] | null>(null);
   const [tramites, setTramites] = useState<any[]>([]);
@@ -43,6 +45,18 @@ export default function CentralDenuncias({ fonte, tema = "auto", titulo, descont
   const raiz = useRef<HTMLDivElement>(null);
   const [modo, setModo] = useState<"celular" | "medio" | "largo">("largo");
   const [verDetalhe, setVerDetalhe] = useState(false);
+  const [cheia, setCheia] = useState(false);
+  const alternarCheia = async () => {
+    const entrar = !cheia; setCheia(entrar);
+    try { if (entrar && !document.fullscreenElement) await document.documentElement.requestFullscreen?.(); if (!entrar && document.fullscreenElement) await document.exitFullscreen?.(); } catch { /* sem tela cheia do navegador */ }
+  };
+  useEffect(() => {
+    const sair = () => { if (!document.fullscreenElement) setCheia(false); };
+    document.addEventListener("fullscreenchange", sair);
+    return () => { document.removeEventListener("fullscreenchange", sair); if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); };
+  }, []);
+  useEffect(() => { document.documentElement.classList.toggle("cdp-modo-cheio", cheia); return () => document.documentElement.classList.remove("cdp-modo-cheio"); }, [cheia]);
+  const fechar = async () => { if (document.fullscreenElement) await document.exitFullscreen?.().catch(() => {}); setCheia(false); aoFechar?.(); };
   const [ladoAberto, setLadoAberto] = useState(false);
   const [menuMais, setMenuMais] = useState(false);
   useEffect(() => {
@@ -205,15 +219,21 @@ export default function CentralDenuncias({ fonte, tema = "auto", titulo, descont
     : [["atendimento", "Atendimento"], ["tramites", `Trâmites (${tramitesDen.length})`], ["local", "Local"], ["historico", "Histórico"]]) as [typeof aba, string][];
 
   return (
-    <div ref={raiz} className={`cdp cdp-m-${modo} ${escuro ? "cdp-escuro" : ""}`} style={{ ["--cdp-desconto" as any]: `${desconto}px` }}>
+    <div ref={raiz} className={`cdp cdp-m-${modo} ${escuro ? "cdp-escuro" : ""}${cheia ? " cdp-cheia" : ""}`} style={{ ["--cdp-desconto" as any]: `${cheia ? 150 : desconto}px` }}>
       <style>{CSS_CENTRAL}</style>
-      {titulo ? <div className="cdp-titulo"><b>{titulo}</b>{puc ? <span className="cdp-sub"> · {ROTULOS_TIPO_PUC[tipoPuc(puc)]}: {puc.nome}</span> : <span className="cdp-sub"> · Central PetGo (todas as denúncias)</span>}</div> : null}
+      <div className="cdp-topo">
       <div className="cdp-kpis">
         {kpis.map(([t, v, s, c]) => (
           <div key={t} className="cdp-kpi" style={{ background: `linear-gradient(135deg, ${c}${escuro ? "33" : "1f"}, var(--cdp-card) 70%)` }}>
             <div className="cdp-sub">{t}</div><div className="cdp-kpi-v">{v}</div><div style={{ color: c, fontWeight: 700, fontSize: 12.5 }}>{s}</div>
           </div>
         ))}
+      </div>
+      <div className="cdp-topo-acoes">
+        <button type="button" className="cdp-icone" onClick={alternarCheia} title={cheia ? "Sair da tela cheia (Esc)" : "Expandir (tela cheia)"} aria-label="Expandir">{cheia ? "🗗" : "⛶"}</button>
+        <span className="cdp-icone cdp-quem" title={`${usuario ? usuario + " · " : ""}${titulo ?? "Central"} · ${puc ? `${ROTULOS_TIPO_PUC[tipoPuc(puc)]}: ${puc.nome}` : "Central PetGo (todas as denúncias)"}`}>👤</span>
+        {aoFechar ? <button type="button" className="cdp-icone cdp-fechar" onClick={fechar} title="Fechar a central" aria-label="Fechar">✕</button> : null}
+      </div>
       </div>
 
       <div className="cdp-corpo">

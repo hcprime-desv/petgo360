@@ -79,12 +79,8 @@ export default function PortalPuc() {
   );
   if (!fonte) return <div className="container" style={{ padding: 40 }}>Carregando…</div>;
   return (
-    <div style={{ padding: "16px clamp(8px, 2vw, 24px) 32px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, gap: 10, flexWrap: "wrap" }}>
-        <div><b>{sessao.nome}</b> <span style={{ opacity: 0.7 }}>· {puc ? `${ROTULOS_TIPO_PUC[tipoPuc(puc)]}: ${puc.nome}` : "Central PetGo (todas as denúncias)"}</span></div>
-        <button className="btn btn-outline" onClick={() => { sair(); setSessao(null); }}>Sair</button>
-      </div>
-      <CentralDenuncias fonte={fonte} tema="auto" titulo={`${NOME_SERVICO} — Central`} desconto={345} />
+    <div style={{ padding: "12px clamp(8px, 2vw, 24px) 16px" }}>
+      <CentralDenuncias fonte={fonte} tema="auto" titulo={`${NOME_SERVICO} — Central`} desconto={262} usuario={sessao.nome} aoFechar={() => { sair(); setSessao(null); }} />
     </div>
   );
 }

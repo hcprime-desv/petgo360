@@ -113,4 +113,16 @@ export const CSS_CENTRAL = `
 .cdp-m-celular .cdp-compor .cdp-chip{white-space:nowrap}
 .cdp-m-celular .cdp-relato{max-height:none;border-bottom:0}
 .cdp-m-celular .cdp-modal-caixa{max-height:96dvh}
+/* topo: indicadores + expandir / quem / fechar (sem linhas de título) */
+.cdp-topo{display:flex;gap:12px;align-items:stretch;margin-bottom:12px}
+.cdp-topo .cdp-kpis{flex:1;min-width:0;margin-bottom:0}
+.cdp-topo-acoes{display:flex;flex-direction:column;gap:6px;flex:none}
+.cdp-topo-acoes .cdp-icone{width:36px;height:36px;font-size:16px;display:grid;place-items:center;border:1px solid var(--cdp-borda);background:var(--cdp-card)}
+.cdp-quem{cursor:help}
+.cdp-fechar:hover{background:#FDECEC;color:#EA534A}
+.cdp-m-celular .cdp-topo-acoes{flex-direction:column}
+/* tela cheia: cobre o site/painel inteiro */
+.cdp.cdp-cheia{position:fixed;inset:0;z-index:2000;border-radius:0;overflow:auto;background:var(--cdp-solido)}
+.cdp.cdp-cheia.cdp-escuro{background:linear-gradient(160deg,#07122b,#0b1d45 60%,#0a1630)}
+html.cdp-modo-cheio body{overflow:hidden!important}
 `;
