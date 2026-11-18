@@ -21,11 +21,11 @@ export function Encaminhar({ fonte, denuncia, pucs, jaTem, meuTramite, aoFechar 
   const meuId = fonte.puc ? String(fonte.puc.id) : "";
   const grupos = useMemo(() => {
     const m = chaveMunicipio(denuncia.municipio), q = busca.trim().toLowerCase();
-    const ok = pucs.filter((p) => pucAtivo(p) && String(p.id) !== meuId && (todosUf || q ? true : String(p.uf) === String(denuncia.uf)))
+    const ok = pucs.filter((p) => pucAtivo(p) && String(p.id) !== meuId && (todosUf || q ? true : String(p.uf) === String(denuncia.uf) || (tipoPuc(p) === "central" && !String(p.uf ?? "").trim())))
       .filter((p) => !q || [p.nome, p.sigla, p.municipio, p.uf].join(" ").toLowerCase().includes(q));
     const regiao = (p: any) => String(p.uf) === String(denuncia.uf) && (!String(p.municipio ?? "").trim() || chaveMunicipio(p.municipio) === m);
     const ord = (a: any, b: any) => Number(regiao(b)) - Number(regiao(a)) || String(a.nome).localeCompare(String(b.nome));
-    return [["Órgãos competentes", ok.filter((p) => tipoPuc(p) === "orgao").sort(ord)], ["ONGs e protetores", ok.filter((p) => tipoPuc(p) !== "orgao").sort(ord)]] as const;
+    return [["Órgãos competentes", ok.filter((p) => tipoPuc(p) === "orgao").sort(ord)], ["ONGs e protetores", ok.filter((p) => tipoPuc(p) === "ong" || tipoPuc(p) === "protetor").sort(ord)], ["Centrais do Disque Denúncia Pet", ok.filter((p) => tipoPuc(p) === "central").sort(ord)]] as const;
   }, [pucs, busca, todosUf, denuncia, meuId]);
   const alternar = (id: string) => setMarcados((l) => (l.includes(id) ? l.filter((x) => x !== id) : [...l, id]));
 

@@ -158,11 +158,30 @@ export const AVISO_SIGILO = "DENÚNCIA ANÔNIMA — a identidade do denunciante 
 // = a central do PetGo decide). Cada PUC trata, conversa com o denunciante PELO PROTOCOLO (anônimo) e ENCAMINHA a um ou mais
 // órgãos (trâmite). Órgãos e estados usam o PAINEL; ONGs e protetores, o PORTAL no /admin do site (se cadastram e esperam a
 // APROVAÇÃO da central). Mesmo cadastro (`orgaos_denuncia`), mesma central nos dois.
-export const TIPOS_PUC = ["orgao", "ong", "protetor"] as const;
+export const TIPOS_PUC = ["orgao", "ong", "protetor", "central"] as const;
 export type TipoPuc = (typeof TIPOS_PUC)[number];
-export const ROTULOS_TIPO_PUC: Record<TipoPuc, string> = { orgao: "Órgão competente", ong: "ONG", protetor: "Protetor(a) independente" };
+export const ROTULOS_TIPO_PUC: Record<TipoPuc, string> = { orgao: "Órgão competente", ong: "ONG", protetor: "Protetor(a) independente", central: "Central do Disque Denúncia Pet" };
 export const tipoPuc = (o: any): TipoPuc => ((TIPOS_PUC as readonly string[]).includes(o?.tipo_puc) ? o.tipo_puc : "orgao");
 export const ehOrgao = (o: any) => tipoPuc(o) === "orgao";
+// ── CENTRAIS DO PRÓPRIO SISTEMA (dono, 18/11/2026): uma por ESTADO, uma para o DF e a GERAL (sem UF). TODA denúncia entra na
+// central do estado de onde vem; se aquele estado não tem central ativa, vai para a GERAL ("Disque Denúncia Pet"). Não aparecem
+// na escolha de quem denuncia (entram sozinhas); recebem pelo trâmite como qualquer ponto.
+export const ehCentral = (o: any) => tipoPuc(o) === "central";
+export const ehCentralGeral = (o: any) => ehCentral(o) && !String(o?.uf ?? "").trim();
+export const SIGLA_CENTRAL_GERAL = "DDPET";
+export const siglaCentralUf = (uf: string) => `DDPET-${String(uf).toUpperCase()}`;
+/** Central que recebe a denúncia: a do ESTADO (ativa) ou, sem ela, a GERAL; null se nem a geral existe. */
+export function centralDaDenuncia(pucs: any[], uf: any): any | null {
+  const u = String(uf ?? "").toUpperCase(), ativas = (pucs ?? []).filter((o) => ehCentral(o) && pucAtivo(o));
+  return ativas.find((o) => String(o.uf ?? "").toUpperCase() === u && u) ?? ativas.find(ehCentralGeral) ?? null;
+}
+/** As 28 centrais padrão (26 estados + DF + a geral) — a carga cria as que faltam. */
+export const centraisPadrao = (): Record<string, any>[] => [
+  { tipo_puc: "central", nome: NOME_SERVICO, sigla: SIGLA_CENTRAL_GERAL, tipo: "protecao_animal", uf: "", municipio: "", emails: "", telefone: "",
+    responsavel: "Central PetGo360", descricao: "Central geral: recebe as denúncias dos estados que não têm central própria.", site: "" },
+  ...UFS.map(([uf, nome]) => ({ tipo_puc: "central", nome: `${NOME_SERVICO} — ${nome}`, sigla: siglaCentralUf(uf), tipo: "protecao_animal", uf, municipio: "", emails: "", telefone: "",
+    responsavel: "Central PetGo360", descricao: `Central do ${NOME_SERVICO} para ${uf === "DF" ? "o Distrito Federal" : `o estado: ${nome}`}.`, site: "" })),
+];
 /** status do PUC: ativo | inativo | aguardando_aprovacao (ONG que se cadastrou) | recusado */
 export const pucAtivo = (o: any) => !["inativo", "aguardando_aprovacao", "recusado"].includes(String(o?.status ?? "ativo"));
 export const STATUS_PUC = ["ativo", "inativo", "aguardando_aprovacao", "recusado"] as const;
@@ -176,7 +195,7 @@ export function pucsDaRegiao(pucs: any[], uf: any, municipio: any): { orgaos: an
   const u = String(uf ?? "").toUpperCase(), m = chaveMunicipio(municipio);
   const daqui = (pucs ?? []).filter((o) => pucAtivo(o) && String(o.uf ?? "").toUpperCase() === u && (!String(o.municipio ?? "").trim() || chaveMunicipio(o.municipio) === m))
     .sort((a, b) => Number(!!String(b.municipio ?? "").trim()) - Number(!!String(a.municipio ?? "").trim()) || String(a.nome).localeCompare(String(b.nome)));
-  return { orgaos: daqui.filter(ehOrgao), ongs: daqui.filter((o) => !ehOrgao(o)) };
+  return { orgaos: daqui.filter(ehOrgao), ongs: daqui.filter((o) => !ehOrgao(o) && !ehCentral(o)) };
 }
 export const nomePuc = (o: any) => String(o?.sigla ? `${o.nome} (${o.sigla})` : o?.nome ?? "—");
 

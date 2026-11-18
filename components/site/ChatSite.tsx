@@ -3,6 +3,7 @@
 // Chat flutuante do site no MESMO MOTOR do WhatsApp (chatbot do PetGo360, fila e atendente), no desenho do celular e com a
 // cor do site. Liga com NEXT_PUBLIC_CHAT_PATH e "Mostrar o chat no site" (Configuração do site).
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 import ChatMotor from "@/components/chat/ChatMotor";
 import { motorChat } from "@/lib/chatMotor";
@@ -12,7 +13,9 @@ import type { ConfigSite } from "@/lib/site";
 export default function ChatSite({ config }: { config: ConfigSite }) {
   const c = useConfigSite(config);
   const [aberto, setAberto] = useState(false);
-  if (!motorChat || !c.chatAtivo) return null;
+  const caminho = usePathname() ?? "";
+  // telas de TRABALHO (central de denúncias dos pontos e portal do parceiro): o botão flutuante cobria a lista — sai delas
+  if (!motorChat || !c.chatAtivo || /^\/(denuncia\/central|parceiro)(\/|$)/.test(caminho)) return null;
   const alternar = () => setAberto((v) => !v);
   return (
     <>

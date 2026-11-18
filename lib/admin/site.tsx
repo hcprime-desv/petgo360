@@ -15,7 +15,7 @@ const PERMISSOES: Record<string, string> = {
 const CONTEUDO = [PERMISSAO_PAINEL, P.paginas, P.faq, P.avisos];
 const PERFIS: Opcao[] = [
   { valor: "administrador", rotulo: "Administrador (tudo)" }, { valor: "editor", rotulo: "Editor de conteúdo" },
-  { valor: "comercial", rotulo: "Comercial (interessados)" }, { valor: "atendimento", rotulo: "Atendimento (chat)" }, { valor: "auditoria", rotulo: "Auditoria" },
+  { valor: "comercial", rotulo: "Comercial (interessados)" }, { valor: "atendimento", rotulo: "Central de Atendimento" }, { valor: "auditoria", rotulo: "Auditoria" },
 ];
 
 const op = (lista: readonly string[], rotulos?: Record<string, string>): Opcao[] => lista.map((v) => ({ valor: v, rotulo: rotulos?.[v] ?? v }));
