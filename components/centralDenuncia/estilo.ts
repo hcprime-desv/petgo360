@@ -125,4 +125,17 @@ export const CSS_CENTRAL = `
 .cdp.cdp-cheia{position:fixed;inset:0;z-index:2000;border-radius:0;overflow:auto;background:var(--cdp-solido)}
 .cdp.cdp-cheia.cdp-escuro{background:linear-gradient(160deg,#07122b,#0b1d45 60%,#0a1630)}
 html.cdp-modo-cheio body{overflow:hidden!important}
+/* a busca da fila não estica (o CSS do painel deixava o input com 369 px de altura) */
+.cdp input.cdp-input,.cdp select.cdp-input{flex:0 0 auto!important;height:40px!important;min-height:0!important}
+/* COLUNA DO MEIO (18/11/2026): com a coluna estreita, o título fica numa linha e os botões embaixo (antes o título quebrava
+   em 4 linhas e empurrava o campo de escrever para fora da tela); o relato ocupa no máximo 28% e os atalhos rolam numa linha */
+.cdp-centro{container-type:inline-size}
+@container (max-width: 860px){
+  .cdp-cab{flex-direction:column;align-items:stretch!important}
+  .cdp-cab .cdp-acoes{justify-content:flex-start;flex-wrap:wrap!important}
+}
+.cdp-relato{max-height:28%}
+.cdp-compor .cdp-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+.cdp-compor .cdp-chip{white-space:nowrap}
+.cdp-msgs{min-height:60px}
 `;

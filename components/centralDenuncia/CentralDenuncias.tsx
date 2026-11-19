@@ -4,7 +4,7 @@
 // fila em cartões à esquerda, atendimento no centro (etapas, abas, relato com fotos e a CONVERSA pelo protocolo) e, à direita,
 // local, destinos, trâmite e o alerta de prazo. Serve à central do PetGo (puc = null: todas as denúncias) e a cada PUC (só as
 // denúncias que chegaram a ele). Ver fonte.ts.
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { FonteCentral } from "./fonte";
 import { Conversa } from "./Conversa";
 import { Encaminhar } from "./Encaminhar";
@@ -56,6 +56,23 @@ export default function CentralDenuncias({ fonte, tema = "auto", titulo, descont
     return () => { document.removeEventListener("fullscreenchange", sair); if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); };
   }, []);
   useEffect(() => { document.documentElement.classList.toggle("cdp-modo-cheio", cheia); return () => document.documentElement.classList.remove("cdp-modo-cheio"); }, [cheia]);
+  // ALTURA (18/11/2026): a fila, o atendimento e o lado direito ocupam do ponto onde começam até o fim da janela — medido (o
+  // topo do painel e do site têm alturas diferentes; o `desconto` fixo deixava a central passar do fim da tela).
+  const corpoRef = useRef<HTMLDivElement>(null);
+  const [alturaCorpo, setAlturaCorpo] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const medir = () => {
+      const el = corpoRef.current; if (!el) return;
+      const topo = el.getBoundingClientRect().top + (cheia ? 0 : window.scrollY);
+      setAlturaCorpo(Math.max(480, Math.floor(window.innerHeight - topo - (cheia ? 14 : 18))));
+    };
+    medir();
+    const t1 = setTimeout(medir, 400), t2 = setTimeout(medir, 1500);
+    window.addEventListener("resize", medir);
+    const o = typeof ResizeObserver !== "undefined" ? new ResizeObserver(medir) : null;
+    if (o && raiz.current) o.observe(raiz.current);
+    return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener("resize", medir); o?.disconnect(); };
+  }, [cheia, modo]);
   const fechar = async () => { if (document.fullscreenElement) await document.exitFullscreen?.().catch(() => {}); setCheia(false); aoFechar?.(); };
   const [ladoAberto, setLadoAberto] = useState(false);
   const [menuMais, setMenuMais] = useState(false);
@@ -236,7 +253,7 @@ export default function CentralDenuncias({ fonte, tema = "auto", titulo, descont
       </div>
       </div>
 
-      <div className="cdp-corpo">
+      <div ref={corpoRef} className="cdp-corpo" style={!celular && alturaCorpo ? { height: alturaCorpo } : undefined}>
         {/* ── FILA ── */}
         <section className="cdp-card cdp-fila" hidden={celular && verDetalhe}>
           <div className="cdp-linha"><h2>Denúncias</h2>{contar("recebida") ? <span className="cdp-pill" style={{ background: "#EA534A", color: "#fff" }}>{contar("recebida")} novas</span> : null}</div>
